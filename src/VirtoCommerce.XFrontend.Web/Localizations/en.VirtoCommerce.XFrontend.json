@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "x-frontend:create": "Create XFrontend related data",
+    "x-frontend:read": "View XFrontend related data",
+    "x-frontend:update": "Update XFrontend related data",
+    "x-frontend:delete": "Delete XFrontend related data"
+  }
+}
