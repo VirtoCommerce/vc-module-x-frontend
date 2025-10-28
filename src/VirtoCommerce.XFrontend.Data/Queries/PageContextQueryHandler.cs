@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,25 +42,25 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
         var user = userTask.Result;
         var storeResponse = storeTask.Result;
 
-        var slugInfoResponseTask = GetSlugInfoAsync(request, storeResponse.StoreId, user.Id);
-        var tasks = new List<Task> { slugInfoResponseTask };
-
-        Task<ExpWhiteLabelingSetting> whiteLabelingSettingTask = null;
-        if (IsWhiteLabelingModuleInstalled())
-        {
-            whiteLabelingSettingTask = GetWhiteLabelingSettingAsync(request, storeResponse.StoreId, user.Id);
-            tasks.Add(whiteLabelingSettingTask);
-        }
-
-        await Task.WhenAll(tasks);
-
         var result = new PageContexResponse
         {
             User = user,
             StoreResponse = storeResponse,
-            SlugInfoResponse = slugInfoResponseTask.Result,
-            WhiteLabelingSetting = whiteLabelingSettingTask?.Result,
         };
+
+        if (IsWhiteLabelingModuleInstalled())
+        {
+            var slugInfoResponseTask = GetSlugInfoAsync(request, storeResponse.StoreId, user.Id);
+            var whiteLabelingSettingTask = GetWhiteLabelingSettingAsync(request, storeResponse.StoreId, user.Id);
+            await Task.WhenAll(slugInfoResponseTask, whiteLabelingSettingTask);
+
+            result.SlugInfoResponse = slugInfoResponseTask.Result;
+            result.WhiteLabelingSetting = whiteLabelingSettingTask.Result;
+        }
+        else
+        {
+            result.SlugInfoResponse = await GetSlugInfoAsync(request, storeResponse.StoreId, user.Id);
+        }
 
         return result;
     }
