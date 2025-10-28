@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using VirtoCommerce.Platform.Core.Common;
+using VirtoCommerce.Platform.Core.Modularity;
 using VirtoCommerce.Platform.Core.Security;
 using VirtoCommerce.ProfileExperienceApiModule.Data.Models;
 using VirtoCommerce.ProfileExperienceApiModule.Data.Queries;
@@ -20,11 +23,13 @@ namespace VirtoCommerce.XFrontend.Data.Queries;
 public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageContexResponse>
 {
     private readonly IMediator _mediator;
+    private readonly IModuleCatalog _moduleCatalog;
     private readonly Func<UserManager<ApplicationUser>> _userManagerFactory;
 
-    public PageContextQueryHandler(IMediator mediator, Func<UserManager<ApplicationUser>> userManagerFactory)
+    public PageContextQueryHandler(IMediator mediator, IModuleCatalog moduleCatalog, Func<UserManager<ApplicationUser>> userManagerFactory)
     {
         _mediator = mediator;
+        _moduleCatalog = moduleCatalog;
         _userManagerFactory = userManagerFactory;
     }
 
@@ -39,16 +44,23 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
         var storeResponse = storeTask.Result;
 
         var slugInfoResponseTask = GetSlugInfoAsync(request, storeResponse.StoreId, user.Id);
-        var whiteLabelingSettingsTask = GetWhiteLabelingSettingAsync(request, storeResponse.StoreId, user.Id);
+        var tasks = new List<Task> { slugInfoResponseTask };
 
-        await Task.WhenAll(slugInfoResponseTask, whiteLabelingSettingsTask);
+        Task<ExpWhiteLabelingSetting> whiteLabelingSettingTask = null;
+        if (IsWhiteLabelingModuleInstalled())
+        {
+            whiteLabelingSettingTask = GetWhiteLabelingSettingAsync(request, storeResponse.StoreId, user.Id);
+            tasks.Add(whiteLabelingSettingTask);
+        }
+
+        await Task.WhenAll(tasks);
 
         var result = new PageContexResponse
         {
             User = user,
             StoreResponse = storeResponse,
             SlugInfoResponse = slugInfoResponseTask.Result,
-            WhiteLabelingSetting = whiteLabelingSettingsTask.Result,
+            WhiteLabelingSetting = whiteLabelingSettingTask?.Result,
         };
 
         return result;
@@ -107,5 +119,14 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
         var userManager = _userManagerFactory();
         var user = await userManager.FindByIdAsync(userId);
         return user != null;
+    }
+
+    /// <summary>
+    /// Checks if WhiteLabeling Module is installed.
+    /// </summary>
+    /// <returns></returns>
+    private bool IsWhiteLabelingModuleInstalled()
+    {
+        return _moduleCatalog.Modules.Any(m => m.ModuleName == "VirtoCommerce.WhiteLabeling");
     }
 }
