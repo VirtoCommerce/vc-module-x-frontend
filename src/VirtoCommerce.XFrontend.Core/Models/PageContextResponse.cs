@@ -4,7 +4,7 @@ using VirtoCommerce.Xapi.Core.Models;
 
 namespace VirtoCommerce.XFrontend.Core.Models;
 
-public class PageContexResponse
+public class PageContextResponse
 {
     public ExpWhiteLabelingSetting WhiteLabelingSetting { get; set; }
 

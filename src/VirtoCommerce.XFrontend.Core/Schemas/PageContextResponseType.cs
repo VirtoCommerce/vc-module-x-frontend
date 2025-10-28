@@ -5,9 +5,9 @@ using VirtoCommerce.XFrontend.Core.Models;
 
 namespace VirtoCommerce.XFrontend.Core.Schemas;
 
-public class PageContexResponseType : ExtendableGraphType<PageContexResponse>
+public class PageContextResponseType : ExtendableGraphType<PageContextResponse>
 {
-    public PageContexResponseType()
+    public PageContextResponseType()
     {
         Field<SlugInfoResponseType>("slugInfo").Resolve(context => context.Source.SlugInfoResponse);
         Field<StoreResponseType>("store").Resolve(context => context.Source.StoreResponse);

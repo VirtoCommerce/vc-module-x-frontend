@@ -12,7 +12,7 @@ using VirtoCommerce.XFrontend.Core.Schemas;
 
 namespace VirtoCommerce.XFrontend.Data.Queries;
 
-class PageContextQueryBuilder : QueryBuilder<PageContextQuery, PageContexResponse, PageContexResponseType>
+class PageContextQueryBuilder : QueryBuilder<PageContextQuery, PageContextResponse, PageContextResponseType>
 {
     protected override string Name => "pageContext";
 

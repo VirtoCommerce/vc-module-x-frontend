@@ -19,7 +19,7 @@ using VirtoCommerce.XFrontend.Core.Queries;
 
 namespace VirtoCommerce.XFrontend.Data.Queries;
 
-public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageContexResponse>
+public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageContextResponse>
 {
     private readonly IMediator _mediator;
     private readonly IModuleCatalog _moduleCatalog;
@@ -32,7 +32,7 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
         _userManagerFactory = userManagerFactory;
     }
 
-    public async Task<PageContexResponse> Handle(PageContextQuery request, CancellationToken cancellationToken)
+    public async Task<PageContextResponse> Handle(PageContextQuery request, CancellationToken cancellationToken)
     {
         var userTask = GetUserAsync(request);
         var storeTask = GetStoreAsync(request);
@@ -42,7 +42,7 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
         var user = userTask.Result;
         var storeResponse = storeTask.Result;
 
-        var result = new PageContexResponse
+        var result = new PageContextResponse
         {
             User = user,
             StoreResponse = storeResponse,

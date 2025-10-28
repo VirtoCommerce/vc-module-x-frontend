@@ -7,7 +7,7 @@ using VirtoCommerce.XFrontend.Core.Models;
 
 namespace VirtoCommerce.XFrontend.Core.Queries;
 
-public class PageContextQuery : Query<PageContexResponse>
+public class PageContextQuery : Query<PageContextResponse>
 {
     public string Domain { get; set; }
 
