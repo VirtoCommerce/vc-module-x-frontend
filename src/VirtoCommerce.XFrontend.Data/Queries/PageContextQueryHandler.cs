@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using VirtoCommerce.CoreModule.Core.Common;
 using VirtoCommerce.Platform.Core.Common;
 using VirtoCommerce.Platform.Core.Modularity;
 using VirtoCommerce.Platform.Core.Security;
@@ -42,17 +44,7 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
         var user = userTask.Result;
         var storeResponse = storeTask.Result;
 
-        var cultureName = request.CultureName;
-        var defaultStoreCultureName = storeResponse.DefaultLanguage?.CultureName;
-        if (cultureName.IsNullOrEmpty())
-        {
-            cultureName = defaultStoreCultureName;
-        }
-        else if (cultureName.Length == 2)
-        {
-            cultureName = storeResponse.AvailableLanguages.FirstOrDefault(x => cultureName == x.TwoLetterLanguageName)?.CultureName;
-            cultureName ??= defaultStoreCultureName;
-        }
+        var cultureName = GetCultureName(request.CultureName, storeResponse.DefaultLanguage?.CultureName, storeResponse.AvailableLanguages);
 
         var result = new PageContextResponse
         {
@@ -139,5 +131,20 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
     private bool IsWhiteLabelingModuleInstalled()
     {
         return _moduleCatalog.Modules.Any(m => m.ModuleName == "VirtoCommerce.WhiteLabeling");
+    }
+
+    private static string GetCultureName(string cultureName, string defaultCultureName, IList<Language> availableLanguages)
+    {
+        if (cultureName.IsNullOrEmpty())
+        {
+            cultureName = defaultCultureName;
+        }
+        else if (cultureName.Length == 2)
+        {
+            cultureName = availableLanguages.FirstOrDefault(x => cultureName == x.TwoLetterLanguageName)?.CultureName;
+            cultureName ??= defaultCultureName;
+        }
+
+        return cultureName;
     }
 }
