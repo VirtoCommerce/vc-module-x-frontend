@@ -42,6 +42,18 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
         var user = userTask.Result;
         var storeResponse = storeTask.Result;
 
+        var cultureName = request.CultureName;
+        var defaultStoreCultureName = storeResponse.DefaultLanguage?.CultureName;
+        if (cultureName.IsNullOrEmpty())
+        {
+            cultureName = defaultStoreCultureName;
+        }
+        else if (cultureName.Length == 2)
+        {
+            cultureName = storeResponse.AvailableLanguages.FirstOrDefault(x => cultureName == x.TwoLetterLanguageName)?.CultureName;
+            cultureName ??= defaultStoreCultureName;
+        }
+
         var result = new PageContextResponse
         {
             User = user,
@@ -50,8 +62,8 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
 
         if (IsWhiteLabelingModuleInstalled())
         {
-            var slugInfoResponseTask = GetSlugInfoAsync(request, storeResponse.StoreId, user.Id);
-            var whiteLabelingSettingTask = GetWhiteLabelingSettingAsync(request, storeResponse.StoreId, user.Id);
+            var slugInfoResponseTask = GetSlugInfoAsync(request, storeResponse.StoreId, user.Id, cultureName);
+            var whiteLabelingSettingTask = GetWhiteLabelingSettingAsync(request, storeResponse.StoreId, user.Id, cultureName);
             await Task.WhenAll(slugInfoResponseTask, whiteLabelingSettingTask);
 
             result.SlugInfoResponse = slugInfoResponseTask.Result;
@@ -59,7 +71,7 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
         }
         else
         {
-            result.SlugInfoResponse = await GetSlugInfoAsync(request, storeResponse.StoreId, user.Id);
+            result.SlugInfoResponse = await GetSlugInfoAsync(request, storeResponse.StoreId, user.Id, cultureName);
         }
 
         return result;
@@ -96,18 +108,18 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
         StoreId = request.StoreId,
     });
 
-    protected virtual Task<SlugInfoResponse> GetSlugInfoAsync(PageContextQuery request, string storeId, string userId) => _mediator.Send(new SlugInfoQuery
+    protected virtual Task<SlugInfoResponse> GetSlugInfoAsync(PageContextQuery request, string storeId, string userId, string cultureName) => _mediator.Send(new SlugInfoQuery
     {
         Permalink = request.Permalink,
-        CultureName = request.CultureName,
+        CultureName = cultureName,
         OrganizationId = request.OrganizationId,
         UserId = userId,
         StoreId = storeId,
     });
 
-    protected virtual Task<ExpWhiteLabelingSetting> GetWhiteLabelingSettingAsync(PageContextQuery request, string storeId, string userId) => _mediator.Send(new GetWhiteLabelingSettingsQuery
+    protected virtual Task<ExpWhiteLabelingSetting> GetWhiteLabelingSettingAsync(PageContextQuery request, string storeId, string userId, string cultureName) => _mediator.Send(new GetWhiteLabelingSettingsQuery
     {
-        CultureName = request.CultureName,
+        CultureName = cultureName,
         OrganizationId = request.OrganizationId,
         UserId = userId,
         StoreId = storeId,
