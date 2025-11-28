@@ -1,46 +1,81 @@
-# XFrontend
+# Frontend Experience API
 
-## Overview
+The **X Frontend Module** for Virto Commerce provides a set of optimized backend queries designed specifically to improve **rendering performance** and enhance **front-end user experience** scenarios.  
 
-Short overview of what the new module is.
+This module introduces a unified **GraphQL query** that consolidates several commonly requested data types into a single optimized call. This reduces network round-trips and simplifies frontend integration.
 
-- What is the new or updated experience?
+---
 
-- Does this module replace an existing module/experience? If yes, what is the transition plan?
+## Key Features
 
-- Does this module has dependency on other ? If yes, list/explain the dependencies.
+- **Optimized queries** tailored for frontend rendering needs  
+- **Single GraphQL endpoint** providing combined contextual data  
+- Fetches aggregated information required to render a page efficiently  
+- Extends Virto Commerce GraphQL schema with `pageContext` query  
+- Returns a combined object consisting of:
+  - **SlugInfoType**
+  - **StoreType**
+  - **WhiteLabelingSettingsType**
+  - **UserType**
 
-- List the key deployment scenarios - why would people use this module?
+## What the Module Adds
 
-## Functional Requirements
+This module introduces the `pageContext` GraphQL query, which returns all necessary page-level contextual information in one call.
 
-Short description of the new module functional requirements.
+### Example Query
 
-## Scenarios
+```graphql
+query GetPageContenxt {
+  pageContext (
+    domain: "localhost"
+    storeId: "Electronics"
+    cultureName: "en-US"
+    permalink: "/"
+    organizationId: "OrganizationId"
+    userId: "UserId"
+  ) {
+    slugInfo {
+      entityInfo {
+        id
+      }
+    }
+    store {
+      storeId
+    }
+    whiteLabelingSettings {
+      logoUrl
+    }
+    user {
+      id  
+      userName
+    }
+  }
+}
+```
 
-List of scenarios that the new module implements
+### Response Structure
+The `pageContext` field returns an aggregated object designed for fast initial page load.
+It contains the following types:
 
-1. [Scenario 1](/doc/scenario-name1.md)
-1. [Scenario 2](/doc/scenario-name2.md)
-1. [Scenario 3](/doc/scenario-name3.md)
-    1. [Scenario 3.1](/doc/scenario-name31.md)
-    1. [Scenario 3.2](/doc/scenario-name32.md)
-1. [Scenario 4](/doc/scenario-name4.md)
+#### SlugInfoType
 
-## Web API
+Provides information about the resolved slug, including the associated entity. Used for determining operation context.
 
-Web API documentation for each module is built out automatically and can be accessed by following the link bellow:
-<https://link-to-swager-api>
+#### StoreType
 
-## Database Model
+Contains store-related information such as store ID, settings, and other metadata that may affect rendering.
 
-![DB model](./docs/media/diagram-db-model.png)
+#### WhiteLabelingSettingsType
 
-## Related topics
+Enables dynamic branding in storefronts.
 
-[Some Article1](some-article1.md)
+#### UserType
 
-[Some Article2](some-article2.md)
+Returns details about the current user
+
+## Usage
+This module is intended to be installed in a Virto Commerce backend as part of a frontend integration strategy.
+Once enabled, the unified pageContext query becomes available to clients consuming the Virto GraphQL API—typically storefronts, SSR apps, or SPA frameworks.
 
 ## License
 
