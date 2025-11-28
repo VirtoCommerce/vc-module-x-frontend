@@ -20,6 +20,10 @@
   <owners>
     <owner>VirtoCommerce</owner>
   </owners>
+  
+  <groups>
+    <group>commerce</group>
+  </groups>
 
   <projectUrl>https://github.com/VirtoCommerce/vc-module-x-frontend</projectUrl>
   <iconUrl>Modules/$(VirtoCommerce.XFrontend)/Content/logo.png</iconUrl>
