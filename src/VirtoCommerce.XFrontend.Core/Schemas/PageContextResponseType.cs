@@ -1,7 +1,7 @@
+using VirtoCommerce.ProfileExperienceApiModule.Data.Schemas;
 using VirtoCommerce.WhiteLabeling.ExperienceApi.Schemas;
 using VirtoCommerce.Xapi.Core.Schemas;
 using VirtoCommerce.XFrontend.Core.Models;
-using UserType = VirtoCommerce.ProfileExperienceApiModule.Data.Schemas.UserType;
 
 namespace VirtoCommerce.XFrontend.Core.Schemas;
 
