@@ -11,8 +11,6 @@ using VirtoCommerce.Platform.Core.Modularity;
 using VirtoCommerce.Platform.Core.Security;
 using VirtoCommerce.ProfileExperienceApiModule.Data.Models;
 using VirtoCommerce.ProfileExperienceApiModule.Data.Queries;
-using VirtoCommerce.WhiteLabeling.ExperienceApi.Models;
-using VirtoCommerce.WhiteLabeling.ExperienceApi.Queries;
 using VirtoCommerce.Xapi.Core.Infrastructure;
 using VirtoCommerce.Xapi.Core.Models;
 using VirtoCommerce.Xapi.Core.Queries;
@@ -97,15 +95,6 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
     protected virtual Task<SlugInfoResponse> GetSlugInfoAsync(PageContextQuery request, string storeId, string userId, string cultureName) => _mediator.Send(new SlugInfoQuery
     {
         Permalink = request.Permalink,
-        CultureName = cultureName,
-        OrganizationId = request.OrganizationId,
-        UserId = userId,
-        StoreId = storeId,
-    });
-
-    [Obsolete("Not being called anymore. White labeling initialization moved to White labeling module.", DiagnosticId = "VC0012", UrlFormat = "https://docs.virtocommerce.org/platform/user-guide/versions/virto3-products-versions/")]
-    protected virtual Task<ExpWhiteLabelingSetting> GetWhiteLabelingSettingAsync(PageContextQuery request, string storeId, string userId, string cultureName) => _mediator.Send(new GetWhiteLabelingSettingsQuery
-    {
         CultureName = cultureName,
         OrganizationId = request.OrganizationId,
         UserId = userId,
