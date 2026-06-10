@@ -26,7 +26,7 @@
   </groups>
 
   <projectUrl>https://github.com/VirtoCommerce/vc-module-x-frontend</projectUrl>
-  <iconUrl>Modules/$(VirtoCommerce.XFrontend)/Content/logo.png</iconUrl>
+  <iconUrl>Modules/$(VirtoCommerce.XFrontend)/Content/logo.svg</iconUrl>
   <requireLicenseAcceptance>false</requireLicenseAcceptance>
 
   <assemblyFile>VirtoCommerce.XFrontend.Web.dll</assemblyFile>

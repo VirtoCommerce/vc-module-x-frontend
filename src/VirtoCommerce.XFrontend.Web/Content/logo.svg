@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="XFrontend">
+  <title>XFrontend</title>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="92%" y2="100%">
+      <stop offset="0%" stop-color="#5FC8F5"/>
+      <stop offset="100%" stop-color="#265FC6"/>
+    </linearGradient>
+    <filter id="lift" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#0B3F66" flood-opacity="0.30"/>
+    </filter>
+    <clipPath id="win"><rect x="-42" y="-38" width="80" height="74" rx="9"/></clipPath>
+  </defs>
+
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+
+  <g transform="translate(64,64)" filter="url(#lift)">
+    <!-- Browser window -->
+    <rect x="-42" y="-38" width="80" height="74" rx="9" fill="#ffffff"/>
+    <g clip-path="url(#win)"><rect x="-42" y="-38" width="80" height="15" fill="#E1EAF5"/></g>
+    <circle cx="-34" cy="-30.5" r="2.8" fill="#E5484D"/>
+    <circle cx="-26" cy="-30.5" r="2.8" fill="#FFC24D"/>
+    <circle cx="-18" cy="-30.5" r="2.8" fill="#3FD8B4"/>
+
+    <!-- Storefront content -->
+    <rect x="-32" y="-15" width="60" height="16" rx="3" fill="#5FC8F5"/>
+    <rect x="-32" y="7" width="26" height="20" rx="3" fill="#FFC24D"/>
+    <rect x="2" y="7" width="26" height="20" rx="3" fill="#3FD8B4"/>
+
+    <!-- GraphQL API badge -->
+    <circle cx="29" cy="28" r="15" fill="#6A45D9" stroke="#ffffff" stroke-width="2.5"/>
+    <g stroke="#ffffff" stroke-width="2.1"><line x1="29" y1="20" x2="22" y2="34"/><line x1="29" y1="20" x2="37" y2="33"/><line x1="22" y1="34" x2="37" y2="33"/></g>
+    <circle cx="29" cy="20" r="3.1" fill="#ffffff"/>
+    <circle cx="21.5" cy="34.5" r="3.1" fill="#ffffff"/>
+    <circle cx="37" cy="33" r="3.1" fill="#ffffff"/>
+  </g>
+</svg>
