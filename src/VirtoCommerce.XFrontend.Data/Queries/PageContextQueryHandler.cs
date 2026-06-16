@@ -109,13 +109,20 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
         StoreId = storeId,
     });
 
-    protected virtual Task<ExpWhiteLabelingSetting> GetWhiteLabelingSettingAsync(PageContextQuery request, string storeId, string userId, string cultureName) => _mediator.Send(new GetWhiteLabelingSettingsQuery
+    protected virtual Task<ExpWhiteLabelingSetting> GetWhiteLabelingSettingAsync(PageContextQuery request, string storeId, string userId, string cultureName)
+        => _mediator.Send(CreateWhiteLabelingSettingsQuery(request, storeId, userId, cultureName));
+
+    protected virtual GetWhiteLabelingSettingsQuery CreateWhiteLabelingSettingsQuery(PageContextQuery request, string storeId, string userId, string cultureName)
     {
-        CultureName = cultureName,
-        OrganizationId = request.OrganizationId,
-        UserId = userId,
-        StoreId = storeId,
-    });
+        var query = AbstractTypeFactory<GetWhiteLabelingSettingsQuery>.TryCreateInstance();
+
+        query.CultureName = cultureName;
+        query.OrganizationId = request.OrganizationId;
+        query.UserId = userId;
+        query.StoreId = storeId;
+
+        return query;
+    }
 
     private async Task<bool> UserExistsAsync(string userId)
     {
