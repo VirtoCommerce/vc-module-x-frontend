@@ -24,13 +24,13 @@ namespace VirtoCommerce.XFrontend.Data.Queries;
 public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageContextResponse>
 {
     private readonly IMediator _mediator;
-    private readonly IModuleCatalog _moduleCatalog;
+    private readonly IModuleService _moduleService;
     private readonly Func<UserManager<ApplicationUser>> _userManagerFactory;
 
-    public PageContextQueryHandler(IMediator mediator, IModuleCatalog moduleCatalog, Func<UserManager<ApplicationUser>> userManagerFactory)
+    public PageContextQueryHandler(IMediator mediator, IModuleService moduleService, Func<UserManager<ApplicationUser>> userManagerFactory)
     {
         _mediator = mediator;
-        _moduleCatalog = moduleCatalog;
+        _moduleService = moduleService;
         _userManagerFactory = userManagerFactory;
     }
 
@@ -137,7 +137,7 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
     /// <returns></returns>
     private bool IsWhiteLabelingModuleInstalled()
     {
-        return _moduleCatalog.Modules.Any(m => m.ModuleName == "VirtoCommerce.WhiteLabeling");
+        return _moduleService.IsInstalled("VirtoCommerce.WhiteLabeling");
     }
 
     private static string GetCultureName(string cultureName, string defaultCultureName, IList<Language> availableLanguages)
