@@ -14,6 +14,15 @@
   <title>Frontend Experience API</title>
   <description>Built on top of the Virto Commerce XAPI platform, the Frontend Experience API exposes optimized queries specifically for rendering and user experience scenarios.</description>
 
+  <apps>
+    <app id="vc-frontend">
+      <title>Virto Commerce Frontend</title>
+      <description>Virto Commerce frontend plugin host</description>
+      <placement>Hidden</placement>
+      <pluginsDiscoveryFolder>plugins</pluginsDiscoveryFolder>
+    </app>
+  </apps>
+
   <authors>
     <author>Konstantin Savosteev</author>
   </authors>

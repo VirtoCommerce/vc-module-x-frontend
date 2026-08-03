@@ -14,4 +14,7 @@
     <ProjectReference Include="..\VirtoCommerce.XFrontend.Core\VirtoCommerce.XFrontend.Core.csproj" />
     <ProjectReference Include="..\VirtoCommerce.XFrontend.Data\VirtoCommerce.XFrontend.Data.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Content\vc-frontend\" />
+  </ItemGroup>
 </Project>
