@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "x-frontend:create": "创建 XFrontend 相关数据",
+    "x-frontend:read": "查看 XFrontend 相关数据",
+    "x-frontend:update": "更新 XFrontend 相关数据",
+    "x-frontend:delete": "删除 XFrontend 相关数据"
+  },
+  "settings": {
+    "XFrontend.BrandProfile.SameAs": {
+      "title": "资料页网址 (sameAs)",
+      "description": "商店在其他平台上自有资料页的网址，每行一个。例如：'https://linkedin.com/company/acme'。让搜索引擎和 AI 代理能够将此域名与它们已知的品牌关联起来"
+    },
+    "XFrontend.BrandProfile.Tagline": {
+      "title": "品牌标语",
+      "description": "简短的品牌标语，约 3 至 8 个词"
+    },
+    "XFrontend.BrandProfile.LogoUrl": {
+      "title": "品牌徽标网址",
+      "description": "用于结构化数据的商店品牌徽标。必须是绝对网址，且不小于 112x112 像素。这是商家自己的徽标，绝不会被买方组织的徽标替换"
+    },
+    "XFrontend.BrandProfile.ShareImageUrl": {
+      "title": "社交分享图片网址",
+      "description": "在社交网络上分享商店时所用图片的绝对网址，约 1200x630 像素。这不是徽标"
+    },
+    "XFrontend.BrandProfile.ContactPhone": {
+      "title": "客户服务电话",
+      "description": "包含国家代码的客户服务电话号码。例如：'+1-800-000-0000'。仅填写数字和国家代码，因为结构化数据不允许分机号或自由文本"
+    },
+    "XFrontend.BrandProfile.FoundingDate": {
+      "title": "成立日期",
+      "description": "公司成立日期，采用 ISO 8601 格式。例如：'1998-04-01'"
+    }
+  }
+}

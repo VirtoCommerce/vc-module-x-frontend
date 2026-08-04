@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "x-frontend:create": "Tworzenie danych związanych z XFrontend",
+    "x-frontend:read": "Wyświetlanie danych związanych z XFrontend",
+    "x-frontend:update": "Aktualizowanie danych związanych z XFrontend",
+    "x-frontend:delete": "Usuwanie danych związanych z XFrontend"
+  },
+  "settings": {
+    "XFrontend.BrandProfile.SameAs": {
+      "title": "Adresy URL profili (sameAs)",
+      "description": "Adresy URL własnych profili sklepu na innych platformach, jeden w każdym wierszu. Przykład: 'https://linkedin.com/company/acme'. Umożliwia wyszukiwarkom i agentom AI powiązanie tej domeny z marką, którą już znają"
+    },
+    "XFrontend.BrandProfile.Tagline": {
+      "title": "Hasło marki",
+      "description": "Krótkie hasło marki, około 3 do 8 słów"
+    },
+    "XFrontend.BrandProfile.LogoUrl": {
+      "title": "Adres URL logo marki",
+      "description": "Logo marki sklepu używane w danych strukturalnych. Musi być adresem absolutnym i mieć co najmniej 112x112 pikseli. Jest to logo sprzedawcy i nigdy nie jest zastępowane logo organizacji kupującego"
+    },
+    "XFrontend.BrandProfile.ShareImageUrl": {
+      "title": "Adres URL obrazu do udostępniania w mediach społecznościowych",
+      "description": "Absolutny adres URL obrazu używanego przy udostępnianiu sklepu w mediach społecznościowych, około 1200x630 pikseli. To nie jest logo"
+    },
+    "XFrontend.BrandProfile.ContactPhone": {
+      "title": "Telefon obsługi klienta",
+      "description": "Numer telefonu obsługi klienta wraz z numerem kierunkowym kraju. Przykład: '+1-800-000-0000'. Tylko cyfry i numer kierunkowy kraju, ponieważ dane strukturalne nie dopuszczają numerów wewnętrznych ani dowolnego tekstu"
+    },
+    "XFrontend.BrandProfile.FoundingDate": {
+      "title": "Data założenia",
+      "description": "Data założenia firmy w formacie ISO 8601. Przykład: '1998-04-01'"
+    }
+  }
+}

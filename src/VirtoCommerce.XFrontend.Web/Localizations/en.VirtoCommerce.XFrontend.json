@@ -4,5 +4,31 @@
     "x-frontend:read": "View XFrontend related data",
     "x-frontend:update": "Update XFrontend related data",
     "x-frontend:delete": "Delete XFrontend related data"
+  },
+  "settings": {
+    "XFrontend.BrandProfile.SameAs": {
+      "title": "Profile URLs (sameAs)",
+      "description": "URLs of the store's own profiles elsewhere, one per line. Example: 'https://linkedin.com/company/acme'. Lets search engines and AI agents match this domain to a brand they already know"
+    },
+    "XFrontend.BrandProfile.Tagline": {
+      "title": "Tagline",
+      "description": "Short brand line, about 3 to 8 words"
+    },
+    "XFrontend.BrandProfile.LogoUrl": {
+      "title": "Brand logo URL",
+      "description": "Store brand logo used in structured data. Must be an absolute URL and at least 112x112 pixels. This is the merchant's own logo and is never replaced by a buyer organization logo"
+    },
+    "XFrontend.BrandProfile.ShareImageUrl": {
+      "title": "Social share image URL",
+      "description": "Absolute URL of the image used when the store is shared on social networks, about 1200x630 pixels. This is not the logo"
+    },
+    "XFrontend.BrandProfile.ContactPhone": {
+      "title": "Customer service phone",
+      "description": "Customer service phone number including the country code. Example: '+1-800-000-0000'. Digits and country code only, as structured data does not allow extensions or free text"
+    },
+    "XFrontend.BrandProfile.FoundingDate": {
+      "title": "Founding date",
+      "description": "Date the company was founded, in ISO 8601 format. Example: '1998-04-01'"
+    }
   }
 }
