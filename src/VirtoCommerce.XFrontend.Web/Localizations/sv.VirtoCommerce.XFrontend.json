@@ -6,6 +6,10 @@
     "x-frontend:delete": "Ta bort XFrontend-relaterade data"
   },
   "settings": {
+    "XFrontend.BrandProfile.Description": {
+      "title": "Butiksbeskrivning",
+      "description": "En eller två meningar om vad butiken säljer. Publiceras som butikens beskrivning i strukturerad data och förhandsvisningar i sociala medier, så den bör rikta sig till kunden. Endast oformaterad text, ingen markup"
+    },
     "XFrontend.BrandProfile.SameAs": {
       "title": "Profil-URL:er (sameAs)",
       "description": "URL:er till butikens egna profiler på andra plattformar, en per rad. Exempel: 'https://linkedin.com/company/acme'. Gör att sökmotorer och AI-agenter kan koppla den här domänen till ett varumärke de redan känner till"

@@ -14,6 +14,15 @@ public static class ModuleConstants
         {
             public const string GroupName = "Virto Commerce Frontend|Store Information";
 
+            public static SettingDescriptor Description { get; } = new SettingDescriptor
+            {
+                Name = "XFrontend.BrandProfile.Description",
+                ValueType = SettingValueType.LongText,
+                GroupName = GroupName,
+                DefaultValue = string.Empty,
+                IsPublic = true
+            };
+
             public static SettingDescriptor SameAs { get; } = new SettingDescriptor
             {
                 Name = "XFrontend.BrandProfile.SameAs",
@@ -72,6 +81,7 @@ public static class ModuleConstants
             {
                 get
                 {
+                    yield return Description;
                     yield return SameAs;
                     yield return Tagline;
                     yield return LogoUrl;

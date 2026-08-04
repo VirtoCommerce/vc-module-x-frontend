@@ -6,6 +6,10 @@
     "x-frontend:delete": "Excluir dados relacionados ao XFrontend"
   },
   "settings": {
+    "XFrontend.BrandProfile.Description": {
+      "title": "Descrição da loja",
+      "description": "Uma ou duas frases sobre o que a loja vende. É publicada como descrição da loja nos dados estruturados e nas pré-visualizações em redes sociais, por isso deve dirigir-se ao cliente. Apenas texto simples, sem marcação"
+    },
     "XFrontend.BrandProfile.SameAs": {
       "title": "URLs de perfis (sameAs)",
       "description": "URLs dos perfis da própria loja em outras plataformas, um por linha. Exemplo: 'https://linkedin.com/company/acme'. Permite que mecanismos de busca e agentes de IA associem este domínio a uma marca que já conhecem"

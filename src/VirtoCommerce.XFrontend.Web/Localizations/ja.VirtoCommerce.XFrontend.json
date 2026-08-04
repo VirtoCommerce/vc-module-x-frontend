@@ -6,6 +6,10 @@
     "x-frontend:delete": "XFrontend関連データの削除"
   },
   "settings": {
+    "XFrontend.BrandProfile.Description": {
+      "title": "ストアの説明",
+      "description": "ストアが何を販売しているかを 1〜2 文で記述します。構造化データやソーシャルメディアのプレビューでストアの説明として公開されるため、顧客向けの文章にしてください。マークアップは使用せず、プレーンテキストのみ"
+    },
     "XFrontend.BrandProfile.SameAs": {
       "title": "プロフィールURL (sameAs)",
       "description": "他のプラットフォーム上のストア自身のプロフィールのURL（1行に1つ）。例: 'https://linkedin.com/company/acme'。検索エンジンやAIエージェントがこのドメインを既知のブランドと関連付けられるようになります"

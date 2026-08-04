@@ -6,6 +6,10 @@
     "x-frontend:delete": "删除 XFrontend 相关数据"
   },
   "settings": {
+    "XFrontend.BrandProfile.Description": {
+      "title": "商店描述",
+      "description": "用一到两句话说明商店销售的内容。该内容会作为商店描述发布到结构化数据和社交媒体预览中，因此应面向客户撰写。仅限纯文本，不支持标记"
+    },
     "XFrontend.BrandProfile.SameAs": {
       "title": "资料页网址 (sameAs)",
       "description": "商店在其他平台上自有资料页的网址，每行一个。例如：'https://linkedin.com/company/acme'。让搜索引擎和 AI 代理能够将此域名与它们已知的品牌关联起来"

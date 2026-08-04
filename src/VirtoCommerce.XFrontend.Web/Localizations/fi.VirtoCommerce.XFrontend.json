@@ -6,6 +6,10 @@
     "x-frontend:delete": "Poista XFrontendiin liittyviä tietoja"
   },
   "settings": {
+    "XFrontend.BrandProfile.Description": {
+      "title": "Kaupan kuvaus",
+      "description": "Yksi tai kaksi lausetta siitä, mitä kauppa myy. Julkaistaan kaupan kuvauksena rakenteisessa datassa ja sosiaalisen median esikatseluissa, joten kirjoita se asiakkaalle. Vain pelkkää tekstiä, ei merkintäkieltä"
+    },
     "XFrontend.BrandProfile.SameAs": {
       "title": "Profiilien URL-osoitteet (sameAs)",
       "description": "Kaupan omien profiilien URL-osoitteet muilla alustoilla, yksi riviä kohden. Esimerkki: 'https://linkedin.com/company/acme'. Auttaa hakukoneita ja tekoälyagentteja yhdistämään tämän verkkotunnuksen brändiin, jonka ne jo tuntevat"

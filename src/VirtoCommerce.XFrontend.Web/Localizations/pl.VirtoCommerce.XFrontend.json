@@ -6,6 +6,10 @@
     "x-frontend:delete": "Usuwanie danych związanych z XFrontend"
   },
   "settings": {
+    "XFrontend.BrandProfile.Description": {
+      "title": "Opis sklepu",
+      "description": "Jedno lub dwa zdania o tym, co sprzedaje sklep. Jest publikowany jako opis sklepu w danych strukturalnych i podglądach w mediach społecznościowych, więc powinien być skierowany do klienta. Tylko zwykły tekst, bez znaczników"
+    },
     "XFrontend.BrandProfile.SameAs": {
       "title": "Adresy URL profili (sameAs)",
       "description": "Adresy URL własnych profili sklepu na innych platformach, jeden w każdym wierszu. Przykład: 'https://linkedin.com/company/acme'. Umożliwia wyszukiwarkom i agentom AI powiązanie tej domeny z marką, którą już znają"
