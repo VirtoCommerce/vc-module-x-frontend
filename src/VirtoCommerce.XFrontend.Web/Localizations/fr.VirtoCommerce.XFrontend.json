@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "x-frontend:create": "Créer des données liées à XFrontend",
+    "x-frontend:read": "Voir les données liées à XFrontend",
+    "x-frontend:update": "Mettre à jour les données liées à XFrontend",
+    "x-frontend:delete": "Supprimer les données liées à XFrontend"
+  },
+  "settings": {
+    "XFrontend.BrandProfile.Description": {
+      "title": "Description de la boutique",
+      "description": "Une ou deux phrases sur ce que vend la boutique. Publiée comme description de la boutique dans les données structurées et les aperçus sur les réseaux sociaux, elle doit donc s'adresser au client. Texte brut uniquement, sans balisage"
+    },
+    "XFrontend.BrandProfile.SameAs": {
+      "title": "URLs de profils (sameAs)",
+      "description": "URLs des profils du magasin sur d'autres plateformes, une par ligne. Exemple : 'https://linkedin.com/company/acme'. Permet aux moteurs de recherche et aux agents IA d'associer ce domaine à une marque qu'ils connaissent déjà"
+    },
+    "XFrontend.BrandProfile.Tagline": {
+      "title": "Slogan",
+      "description": "Courte phrase de marque, environ 3 à 8 mots"
+    },
+    "XFrontend.BrandProfile.LogoUrl": {
+      "title": "URL du logo de la marque",
+      "description": "Logo de la marque du magasin utilisé dans les données structurées. Doit être une URL absolue et mesurer au moins 112x112 pixels. Il s'agit du logo du marchand et il n'est jamais remplacé par le logo d'une organisation acheteuse"
+    },
+    "XFrontend.BrandProfile.ShareImageUrl": {
+      "title": "URL de l'image de partage social",
+      "description": "URL absolue de l'image utilisée lors du partage du magasin sur les réseaux sociaux, environ 1200x630 pixels. Ce n'est pas le logo"
+    },
+    "XFrontend.BrandProfile.ContactPhone": {
+      "title": "Téléphone du service client",
+      "description": "Numéro de téléphone du service client avec l'indicatif du pays. Exemple : '+1-800-000-0000'. Chiffres et indicatif pays uniquement, car les données structurées n'acceptent ni extensions ni texte libre"
+    },
+    "XFrontend.BrandProfile.FoundingDate": {
+      "title": "Date de création",
+      "description": "Date de création de l'entreprise au format ISO 8601. Exemple : '1998-04-01'"
+    }
+  }
+}

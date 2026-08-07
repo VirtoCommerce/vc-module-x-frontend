@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "x-frontend:create": "XFrontend-bezogene Daten erstellen",
+    "x-frontend:read": "XFrontend-bezogene Daten anzeigen",
+    "x-frontend:update": "XFrontend-bezogene Daten aktualisieren",
+    "x-frontend:delete": "XFrontend-bezogene Daten löschen"
+  },
+  "settings": {
+    "XFrontend.BrandProfile.Description": {
+      "title": "Shop-Beschreibung",
+      "description": "Ein bis zwei Sätze darüber, was der Shop verkauft. Wird als Beschreibung des Shops in strukturierten Daten und Social-Media-Vorschauen veröffentlicht und sollte daher an Kunden gerichtet sein. Nur Klartext, kein Markup"
+    },
+    "XFrontend.BrandProfile.SameAs": {
+      "title": "Profil-URLs (sameAs)",
+      "description": "URLs der eigenen Profile des Shops auf anderen Plattformen, eine pro Zeile. Beispiel: 'https://linkedin.com/company/acme'. Ermöglicht Suchmaschinen und KI-Agenten, diese Domain einer bereits bekannten Marke zuzuordnen"
+    },
+    "XFrontend.BrandProfile.Tagline": {
+      "title": "Slogan",
+      "description": "Kurze Markenaussage, etwa 3 bis 8 Wörter"
+    },
+    "XFrontend.BrandProfile.LogoUrl": {
+      "title": "URL des Markenlogos",
+      "description": "Markenlogo des Shops für strukturierte Daten. Muss eine absolute URL und mindestens 112x112 Pixel groß sein. Dies ist das eigene Logo des Händlers und wird niemals durch das Logo einer Kundenorganisation ersetzt"
+    },
+    "XFrontend.BrandProfile.ShareImageUrl": {
+      "title": "URL des Social-Media-Bildes",
+      "description": "Absolute URL des Bildes, das beim Teilen des Shops in sozialen Netzwerken verwendet wird, etwa 1200x630 Pixel. Dies ist nicht das Logo"
+    },
+    "XFrontend.BrandProfile.ContactPhone": {
+      "title": "Telefonnummer des Kundenservice",
+      "description": "Telefonnummer des Kundenservice einschließlich Ländervorwahl. Beispiel: '+1-800-000-0000'. Nur Ziffern und Ländervorwahl, da strukturierte Daten keine Durchwahlen oder Freitext zulassen"
+    },
+    "XFrontend.BrandProfile.FoundingDate": {
+      "title": "Gründungsdatum",
+      "description": "Datum der Unternehmensgründung im ISO-8601-Format. Beispiel: '1998-04-01'"
+    }
+  }
+}

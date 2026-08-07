@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "x-frontend:create": "Crear datos relacionados con XFrontend",
+    "x-frontend:read": "Ver datos relacionados con XFrontend",
+    "x-frontend:update": "Actualizar datos relacionados con XFrontend",
+    "x-frontend:delete": "Eliminar datos relacionados con XFrontend"
+  },
+  "settings": {
+    "XFrontend.BrandProfile.Description": {
+      "title": "Descripción de la tienda",
+      "description": "Una o dos frases sobre lo que vende la tienda. Se publica como descripción de la tienda en los datos estructurados y en las vistas previas de redes sociales, por lo que debe dirigirse al cliente. Solo texto sin formato, sin marcado"
+    },
+    "XFrontend.BrandProfile.SameAs": {
+      "title": "URLs de perfiles (sameAs)",
+      "description": "URLs de los perfiles propios de la tienda en otras plataformas, uno por línea. Ejemplo: 'https://linkedin.com/company/acme'. Permite a los motores de búsqueda y a los agentes de IA asociar este dominio con una marca que ya conocen"
+    },
+    "XFrontend.BrandProfile.Tagline": {
+      "title": "Eslogan",
+      "description": "Frase corta de marca, de unas 3 a 8 palabras"
+    },
+    "XFrontend.BrandProfile.LogoUrl": {
+      "title": "URL del logotipo de la marca",
+      "description": "Logotipo de la marca de la tienda utilizado en los datos estructurados. Debe ser una URL absoluta y de al menos 112x112 píxeles. Es el logotipo propio del comerciante y nunca se sustituye por el logotipo de una organización compradora"
+    },
+    "XFrontend.BrandProfile.ShareImageUrl": {
+      "title": "URL de la imagen para redes sociales",
+      "description": "URL absoluta de la imagen que se utiliza al compartir la tienda en redes sociales, de unos 1200x630 píxeles. No es el logotipo"
+    },
+    "XFrontend.BrandProfile.ContactPhone": {
+      "title": "Teléfono de atención al cliente",
+      "description": "Número de teléfono de atención al cliente incluyendo el código de país. Ejemplo: '+1-800-000-0000'. Solo dígitos y código de país, ya que los datos estructurados no admiten extensiones ni texto libre"
+    },
+    "XFrontend.BrandProfile.FoundingDate": {
+      "title": "Fecha de fundación",
+      "description": "Fecha de fundación de la empresa en formato ISO 8601. Ejemplo: '1998-04-01'"
+    }
+  }
+}

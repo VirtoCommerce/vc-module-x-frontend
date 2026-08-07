@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "x-frontend:create": "Luo XFrontendiin liittyviä tietoja",
+    "x-frontend:read": "Näytä XFrontendiin liittyvät tiedot",
+    "x-frontend:update": "Päivitä XFrontendiin liittyviä tietoja",
+    "x-frontend:delete": "Poista XFrontendiin liittyviä tietoja"
+  },
+  "settings": {
+    "XFrontend.BrandProfile.Description": {
+      "title": "Kaupan kuvaus",
+      "description": "Yksi tai kaksi lausetta siitä, mitä kauppa myy. Julkaistaan kaupan kuvauksena rakenteisessa datassa ja sosiaalisen median esikatseluissa, joten kirjoita se asiakkaalle. Vain pelkkää tekstiä, ei merkintäkieltä"
+    },
+    "XFrontend.BrandProfile.SameAs": {
+      "title": "Profiilien URL-osoitteet (sameAs)",
+      "description": "Kaupan omien profiilien URL-osoitteet muilla alustoilla, yksi riviä kohden. Esimerkki: 'https://linkedin.com/company/acme'. Auttaa hakukoneita ja tekoälyagentteja yhdistämään tämän verkkotunnuksen brändiin, jonka ne jo tuntevat"
+    },
+    "XFrontend.BrandProfile.Tagline": {
+      "title": "Iskulause",
+      "description": "Lyhyt brändilause, noin 3–8 sanaa"
+    },
+    "XFrontend.BrandProfile.LogoUrl": {
+      "title": "Brändilogon URL-osoite",
+      "description": "Kaupan brändilogo, jota käytetään rakenteisessa datassa. Sen on oltava absoluuttinen URL-osoite ja vähintään 112x112 pikseliä. Tämä on kauppiaan oma logo, eikä sitä koskaan korvata ostajaorganisaation logolla"
+    },
+    "XFrontend.BrandProfile.ShareImageUrl": {
+      "title": "Sosiaalisen jakamisen kuvan URL-osoite",
+      "description": "Absoluuttinen URL-osoite kuvalle, jota käytetään kun kauppa jaetaan sosiaalisessa mediassa, noin 1200x630 pikseliä. Tämä ei ole logo"
+    },
+    "XFrontend.BrandProfile.ContactPhone": {
+      "title": "Asiakaspalvelun puhelinnumero",
+      "description": "Asiakaspalvelun puhelinnumero maatunnuksella. Esimerkki: '+1-800-000-0000'. Vain numerot ja maatunnus, sillä rakenteinen data ei salli alanumeroita tai vapaata tekstiä"
+    },
+    "XFrontend.BrandProfile.FoundingDate": {
+      "title": "Perustamispäivä",
+      "description": "Yrityksen perustamispäivä ISO 8601 -muodossa. Esimerkki: '1998-04-01'"
+    }
+  }
+}

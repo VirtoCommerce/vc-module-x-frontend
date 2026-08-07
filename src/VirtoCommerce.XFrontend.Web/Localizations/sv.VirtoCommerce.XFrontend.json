@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "x-frontend:create": "Skapa XFrontend-relaterade data",
+    "x-frontend:read": "Visa XFrontend-relaterade data",
+    "x-frontend:update": "Uppdatera XFrontend-relaterade data",
+    "x-frontend:delete": "Ta bort XFrontend-relaterade data"
+  },
+  "settings": {
+    "XFrontend.BrandProfile.Description": {
+      "title": "Butiksbeskrivning",
+      "description": "En eller två meningar om vad butiken säljer. Publiceras som butikens beskrivning i strukturerad data och förhandsvisningar i sociala medier, så den bör rikta sig till kunden. Endast oformaterad text, ingen markup"
+    },
+    "XFrontend.BrandProfile.SameAs": {
+      "title": "Profil-URL:er (sameAs)",
+      "description": "URL:er till butikens egna profiler på andra plattformar, en per rad. Exempel: 'https://linkedin.com/company/acme'. Gör att sökmotorer och AI-agenter kan koppla den här domänen till ett varumärke de redan känner till"
+    },
+    "XFrontend.BrandProfile.Tagline": {
+      "title": "Slogan",
+      "description": "Kort varumärkesfras, omkring 3 till 8 ord"
+    },
+    "XFrontend.BrandProfile.LogoUrl": {
+      "title": "URL till varumärkeslogotyp",
+      "description": "Butikens varumärkeslogotyp som används i strukturerad data. Måste vara en absolut URL och minst 112x112 pixlar. Detta är handlarens egen logotyp och den ersätts aldrig av en köpande organisations logotyp"
+    },
+    "XFrontend.BrandProfile.ShareImageUrl": {
+      "title": "URL till delningsbild för sociala medier",
+      "description": "Absolut URL till bilden som används när butiken delas på sociala nätverk, omkring 1200x630 pixlar. Detta är inte logotypen"
+    },
+    "XFrontend.BrandProfile.ContactPhone": {
+      "title": "Telefonnummer till kundtjänst",
+      "description": "Telefonnummer till kundtjänst inklusive landsnummer. Exempel: '+1-800-000-0000'. Endast siffror och landsnummer, eftersom strukturerad data inte tillåter anknytningar eller fritext"
+    },
+    "XFrontend.BrandProfile.FoundingDate": {
+      "title": "Grundningsdatum",
+      "description": "Datum då företaget grundades, i ISO 8601-format. Exempel: '1998-04-01'"
+    }
+  }
+}

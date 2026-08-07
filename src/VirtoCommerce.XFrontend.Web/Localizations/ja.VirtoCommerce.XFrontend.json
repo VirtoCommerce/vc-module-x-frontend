@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "x-frontend:create": "XFrontend関連データの作成",
+    "x-frontend:read": "XFrontend関連データの表示",
+    "x-frontend:update": "XFrontend関連データの更新",
+    "x-frontend:delete": "XFrontend関連データの削除"
+  },
+  "settings": {
+    "XFrontend.BrandProfile.Description": {
+      "title": "ストアの説明",
+      "description": "ストアが何を販売しているかを 1〜2 文で記述します。構造化データやソーシャルメディアのプレビューでストアの説明として公開されるため、顧客向けの文章にしてください。マークアップは使用せず、プレーンテキストのみ"
+    },
+    "XFrontend.BrandProfile.SameAs": {
+      "title": "プロフィールURL (sameAs)",
+      "description": "他のプラットフォーム上のストア自身のプロフィールのURL（1行に1つ）。例: 'https://linkedin.com/company/acme'。検索エンジンやAIエージェントがこのドメインを既知のブランドと関連付けられるようになります"
+    },
+    "XFrontend.BrandProfile.Tagline": {
+      "title": "タグライン",
+      "description": "短いブランドフレーズ（3〜8語程度）"
+    },
+    "XFrontend.BrandProfile.LogoUrl": {
+      "title": "ブランドロゴURL",
+      "description": "構造化データで使用されるストアのブランドロゴ。絶対URLで、112x112ピクセル以上である必要があります。これはマーチャント自身のロゴであり、購買組織のロゴに置き換えられることはありません"
+    },
+    "XFrontend.BrandProfile.ShareImageUrl": {
+      "title": "ソーシャル共有画像URL",
+      "description": "ストアをソーシャルネットワークで共有するときに使用される画像の絶対URL（1200x630ピクセル程度）。ロゴではありません"
+    },
+    "XFrontend.BrandProfile.ContactPhone": {
+      "title": "カスタマーサービス電話番号",
+      "description": "国番号を含むカスタマーサービスの電話番号。例: '+1-800-000-0000'。構造化データでは内線番号や自由記述を使用できないため、国番号と数字のみを入力してください"
+    },
+    "XFrontend.BrandProfile.FoundingDate": {
+      "title": "設立日",
+      "description": "ISO 8601形式の会社設立日。例: '1998-04-01'"
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "x-frontend:create": "Opprett XFrontend-relaterte data",
+    "x-frontend:read": "Vis XFrontend-relaterte data",
+    "x-frontend:update": "Oppdater XFrontend-relaterte data",
+    "x-frontend:delete": "Slett XFrontend-relaterte data"
+  },
+  "settings": {
+    "XFrontend.BrandProfile.Description": {
+      "title": "Butikkbeskrivelse",
+      "description": "Én eller to setninger om hva butikken selger. Publiseres som butikkens beskrivelse i strukturerte data og forhåndsvisninger i sosiale medier, så den bør henvende seg til kunden. Kun ren tekst, ingen markup"
+    },
+    "XFrontend.BrandProfile.SameAs": {
+      "title": "Profil-URLer (sameAs)",
+      "description": "URLer til butikkens egne profiler på andre plattformer, én per linje. Eksempel: 'https://linkedin.com/company/acme'. Gjør at søkemotorer og AI-agenter kan knytte dette domenet til et merke de allerede kjenner"
+    },
+    "XFrontend.BrandProfile.Tagline": {
+      "title": "Slagord",
+      "description": "Kort merkevaresetning, omtrent 3 til 8 ord"
+    },
+    "XFrontend.BrandProfile.LogoUrl": {
+      "title": "URL til merkevarelogo",
+      "description": "Butikkens merkevarelogo som brukes i strukturerte data. Må være en absolutt URL og minst 112x112 piksler. Dette er forhandlerens egen logo, og den erstattes aldri av logoen til en kjøpsorganisasjon"
+    },
+    "XFrontend.BrandProfile.ShareImageUrl": {
+      "title": "URL til delingsbilde for sosiale medier",
+      "description": "Absolutt URL til bildet som brukes når butikken deles på sosiale nettverk, omtrent 1200x630 piksler. Dette er ikke logoen"
+    },
+    "XFrontend.BrandProfile.ContactPhone": {
+      "title": "Telefonnummer til kundeservice",
+      "description": "Telefonnummer til kundeservice inkludert landkode. Eksempel: '+1-800-000-0000'. Kun sifre og landkode, siden strukturerte data ikke tillater internnummer eller fritekst"
+    },
+    "XFrontend.BrandProfile.FoundingDate": {
+      "title": "Stiftelsesdato",
+      "description": "Datoen selskapet ble stiftet, i ISO 8601-format. Eksempel: '1998-04-01'"
+    }
+  }
+}

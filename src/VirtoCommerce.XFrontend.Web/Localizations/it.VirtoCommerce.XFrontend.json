@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "x-frontend:create": "Crea dati relativi a XFrontend",
+    "x-frontend:read": "Visualizza dati relativi a XFrontend",
+    "x-frontend:update": "Aggiorna dati relativi a XFrontend",
+    "x-frontend:delete": "Elimina dati relativi a XFrontend"
+  },
+  "settings": {
+    "XFrontend.BrandProfile.Description": {
+      "title": "Descrizione del negozio",
+      "description": "Una o due frasi su ciò che vende il negozio. Viene pubblicata come descrizione del negozio nei dati strutturati e nelle anteprime sui social, quindi deve rivolgersi al cliente. Solo testo semplice, senza markup"
+    },
+    "XFrontend.BrandProfile.SameAs": {
+      "title": "URL dei profili (sameAs)",
+      "description": "URL dei profili del negozio su altre piattaforme, uno per riga. Esempio: 'https://linkedin.com/company/acme'. Consente ai motori di ricerca e agli agenti IA di associare questo dominio a un marchio che già conoscono"
+    },
+    "XFrontend.BrandProfile.Tagline": {
+      "title": "Slogan",
+      "description": "Breve frase del marchio, circa 3-8 parole"
+    },
+    "XFrontend.BrandProfile.LogoUrl": {
+      "title": "URL del logo del marchio",
+      "description": "Logo del marchio del negozio utilizzato nei dati strutturati. Deve essere un URL assoluto e di almeno 112x112 pixel. È il logo del commerciante e non viene mai sostituito dal logo di un'organizzazione acquirente"
+    },
+    "XFrontend.BrandProfile.ShareImageUrl": {
+      "title": "URL dell'immagine di condivisione social",
+      "description": "URL assoluto dell'immagine utilizzata quando il negozio viene condiviso sui social network, circa 1200x630 pixel. Non è il logo"
+    },
+    "XFrontend.BrandProfile.ContactPhone": {
+      "title": "Telefono del servizio clienti",
+      "description": "Numero di telefono del servizio clienti comprensivo di prefisso internazionale. Esempio: '+1-800-000-0000'. Solo cifre e prefisso internazionale, poiché i dati strutturati non ammettono interni o testo libero"
+    },
+    "XFrontend.BrandProfile.FoundingDate": {
+      "title": "Data di fondazione",
+      "description": "Data di fondazione dell'azienda in formato ISO 8601. Esempio: '1998-04-01'"
+    }
+  }
+}
