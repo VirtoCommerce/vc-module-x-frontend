@@ -33,6 +33,10 @@
     "XFrontend.BrandProfile.FoundingDate": {
       "title": "Stiftelsesdato",
       "description": "Datoen selskapet ble stiftet, i ISO 8601-format. Eksempel: '1998-04-01'"
+    },
+    "XFrontend.Statistics.Order.CacheExpirationMinutes": {
+      "title": "Hurtigbufringstid for ordrestatistikk (minutter)",
+      "description": "Hvor lenge ordrestatistikken på butikkens dashbord bufres, i minutter; 0 slår av hurtigbufring, og plattformens Caching:CacheAbsoluteExpiration gjelder hvis den er lavere. Når en av kundens ordrer lagres eller slettes via Orders-modulen, oppdateres kundens tall på instansen som behandlet endringen (på alle instanser bare med Redis-hurtigbufferens backplane), mens andre endringer, også av valutaer og valutakurser, venter til bufferen utløper"
     }
   }
 }

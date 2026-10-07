@@ -33,6 +33,10 @@
     "XFrontend.BrandProfile.FoundingDate": {
       "title": "Data di fondazione",
       "description": "Data di fondazione dell'azienda in formato ISO 8601. Esempio: '1998-04-01'"
+    },
+    "XFrontend.Statistics.Order.CacheExpirationMinutes": {
+      "title": "Durata della cache delle statistiche degli ordini (minuti)",
+      "description": "Per quanti minuti le statistiche degli ordini nelle dashboard del negozio restano nella cache; 0 disattiva la cache e, se inferiore, si applica il valore Caching:CacheAbsoluteExpiration della piattaforma. Il salvataggio o l'eliminazione di un ordine di un cliente tramite il modulo Orders aggiorna i suoi dati sull'istanza che ha gestito la modifica (su tutte le istanze solo con il backplane della cache Redis), mentre le altre modifiche, comprese quelle a valute e tassi di cambio, attendono la scadenza"
     }
   }
 }
