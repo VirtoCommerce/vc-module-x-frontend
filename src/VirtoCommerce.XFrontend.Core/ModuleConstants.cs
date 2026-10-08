@@ -110,25 +110,18 @@ public static class ModuleConstants
         public static class Statistics
         {
             public const string GroupName = "Virto Commerce Frontend|Statistics";
+            public const int DefaultOrderCacheExpirationMinutes = 5;
 
             public static SettingDescriptor OrderCacheExpirationMinutes { get; } = new SettingDescriptor
             {
                 Name = "XFrontend.Statistics.Order.CacheExpirationMinutes",
                 ValueType = SettingValueType.Integer,
                 GroupName = GroupName,
-                DefaultValue = 5
+                DefaultValue = DefaultOrderCacheExpirationMinutes
             };
-
-            public static IEnumerable<SettingDescriptor> AllSettings
-            {
-                get
-                {
-                    yield return OrderCacheExpirationMinutes;
-                }
-            }
         }
 
-        public static IEnumerable<SettingDescriptor> AllSettings => BrandProfile.AllSettings.Concat(Statistics.AllSettings);
+        public static IEnumerable<SettingDescriptor> AllSettings => BrandProfile.AllSettings.Append(Statistics.OrderCacheExpirationMinutes);
 
         public static IEnumerable<SettingDescriptor> StoreLevelSettings => BrandProfile.AllSettings;
     }

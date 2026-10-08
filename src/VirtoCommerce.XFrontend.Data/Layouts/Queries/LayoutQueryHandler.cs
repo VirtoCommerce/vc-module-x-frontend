@@ -9,7 +9,7 @@ using VirtoCommerce.XFrontend.Core.Layouts.Services;
 
 namespace VirtoCommerce.XFrontend.Data.Layouts.Queries;
 
-public class LayoutQueryHandler : IQueryHandler<LayoutQuery, Layout>
+public partial class LayoutQueryHandler : IQueryHandler<LayoutQuery, Layout>
 {
     private readonly ILayoutService _layoutService;
 
@@ -32,7 +32,13 @@ public class LayoutQueryHandler : IQueryHandler<LayoutQuery, Layout>
     protected virtual bool IsValidKey(string scope, string storeId)
     {
         return !string.IsNullOrEmpty(scope)
-            && Regex.IsMatch(scope, ModuleConstants.Layouts.ScopePattern)
-            && (string.IsNullOrEmpty(storeId) || Regex.IsMatch(storeId, ModuleConstants.Layouts.StoreIdPattern));
+            && ScopeRegex().IsMatch(scope)
+            && (string.IsNullOrEmpty(storeId) || StoreIdRegex().IsMatch(storeId));
     }
+
+    [GeneratedRegex(ModuleConstants.Layouts.ScopePattern)]
+    private static partial Regex ScopeRegex();
+
+    [GeneratedRegex(ModuleConstants.Layouts.StoreIdPattern)]
+    private static partial Regex StoreIdRegex();
 }
