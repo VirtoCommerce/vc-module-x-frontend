@@ -33,6 +33,10 @@
     "XFrontend.BrandProfile.FoundingDate": {
       "title": "成立日期",
       "description": "公司成立日期，采用 ISO 8601 格式。例如：'1998-04-01'"
+    },
+    "XFrontend.Statistics.Order.CacheExpirationMinutes": {
+      "title": "订单统计缓存时长（分钟）",
+      "description": "店面仪表板中订单统计的缓存时长（分钟）；设为 0 将禁用缓存，若平台的 Caching:CacheAbsoluteExpiration 更短则以其为准。通过 Orders 模块保存或删除客户的订单时，处理该操作的实例会刷新该客户的数据（仅在使用 Redis 缓存背板时才会在所有实例上刷新），其他更改（包括货币和汇率的修改）需等到缓存过期后才会生效"
     }
   }
 }

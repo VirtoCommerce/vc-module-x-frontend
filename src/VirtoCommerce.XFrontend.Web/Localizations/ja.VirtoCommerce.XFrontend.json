@@ -33,6 +33,10 @@
     "XFrontend.BrandProfile.FoundingDate": {
       "title": "設立日",
       "description": "ISO 8601形式の会社設立日。例: '1998-04-01'"
+    },
+    "XFrontend.Statistics.Order.CacheExpirationMinutes": {
+      "title": "注文統計のキャッシュ期間（分）",
+      "description": "ストアのダッシュボードに表示する注文統計をキャッシュする時間（分）で、0 を指定するとキャッシュは無効になり、プラットフォームの Caching:CacheAbsoluteExpiration の方が短い場合はそちらが適用されます。Orders モジュールで顧客の注文を保存または削除すると、変更を処理したインスタンスでその顧客の数値が更新され（すべてのインスタンスで更新されるのは Redis キャッシュ バックプレーン使用時のみ）、通貨や為替レートの編集を含むその他の変更は有効期限が切れるまで反映されません"
     }
   }
 }

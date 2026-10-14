@@ -33,6 +33,10 @@
     "XFrontend.BrandProfile.FoundingDate": {
       "title": "Data założenia",
       "description": "Data założenia firmy w formacie ISO 8601. Przykład: '1998-04-01'"
+    },
+    "XFrontend.Statistics.Order.CacheExpirationMinutes": {
+      "title": "Czas buforowania statystyk zamówień (minuty)",
+      "description": "Jak długo, w minutach, statystyki zamówień na pulpitach sklepu są przechowywane w pamięci podręcznej; 0 wyłącza buforowanie, a jeśli wartość Caching:CacheAbsoluteExpiration platformy jest niższa, obowiązuje ona. Zapisanie lub usunięcie zamówienia klienta przez moduł Orders odświeża jego dane na instancji, która obsłużyła zmianę (na wszystkich instancjach tylko z backplane pamięci podręcznej Redis), a pozostałe zmiany, w tym edycje walut i kursów wymiany, czekają na wygaśnięcie"
     }
   }
 }
