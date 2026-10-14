@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using VirtoCommerce.XFrontend.Core.Statistics.Models;
 using VirtoCommerce.XFrontend.Core.Statistics.Services;
@@ -22,10 +21,5 @@ public sealed class RecordingOrderStatisticsService : IOrderStatisticsService
         Calls.Enqueue(criteria);
 
         return Task.FromResult(Result(criteria));
-    }
-
-    public Task<IDictionary<string, OrderStatistics>> GetByOrganizationAsync(OrderStatisticsCriteria criteria)
-    {
-        throw new NotSupportedException();
     }
 }

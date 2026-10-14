@@ -141,15 +141,8 @@ public sealed class OrderStatisticsCacheTests : IDisposable
         second.Total.Should().Be(100m);
         second.ExcludedCurrencies.Should().Equal("GBP");
 
-        var firstByOrganization = await service.GetByOrganizationAsync(Criteria(_customer));
-        firstByOrganization["org-1"].Total = 1m;
-        firstByOrganization.Remove("org-1");
-
-        var secondByOrganization = await service.GetByOrganizationAsync(Criteria(_customer));
-        secondByOrganization["org-1"].Total.Should().Be(100m);
-
-        // One load per method: the second calls were cache hits, so the copies came from the cached instances.
-        service.Loads.Should().Be(2);
+        // One load: the second call was a cache hit, so the copy came from the cached instance.
+        service.Loads.Should().Be(1);
     }
 
     [Fact]
@@ -197,7 +190,7 @@ public sealed class OrderStatisticsCacheTests : IDisposable
     }
 
     [Fact]
-    public async Task DifferentCriteria_AndMethods_AreDifferentEntries()
+    public async Task DifferentCriteria_AreDifferentEntries()
     {
         using var cache = new RecordingPlatformMemoryCache();
         var service = CreateService(cache, minutes: 5);
@@ -211,9 +204,8 @@ public sealed class OrderStatisticsCacheTests : IDisposable
 
         (await service.GetAsync(february)).Total.Should().Be(100m);
         (await service.GetAsync(april)).Total.Should().Be(200m);
-        (await service.GetByOrganizationAsync(february)).Should().ContainKey("org-1");
 
-        service.Loads.Should().Be(3);
+        service.Loads.Should().Be(2);
     }
 
     [Theory]
@@ -221,15 +213,13 @@ public sealed class OrderStatisticsCacheTests : IDisposable
     [InlineData("")]
     public async Task CriteriaWithoutCustomer_IsRefused(string customerId)
     {
-        // The entries are invalidated per customer: an organization-only criteria would have no token to expire.
+        // The entries are invalidated per customer: a criteria without one would have no token to expire.
         using var cache = new RecordingPlatformMemoryCache();
         var service = CreateService(cache, minutes: 5);
 
         var getAction = () => service.GetAsync(Criteria(customerId));
-        var byOrganizationAction = () => service.GetByOrganizationAsync(Criteria(customerId));
 
         (await getAction.Should().ThrowAsync<ArgumentException>()).Which.Message.Should().Contain("CustomerId is required");
-        (await byOrganizationAction.Should().ThrowAsync<ArgumentException>()).Which.Message.Should().Contain("CustomerId is required");
         service.Loads.Should().Be(0);
     }
 

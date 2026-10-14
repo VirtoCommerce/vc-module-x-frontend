@@ -283,45 +283,6 @@ public sealed class OrderStatisticsServiceTests : IDisposable
         (await action.Should().ThrowAsync<ArgumentException>()).Which.Message.Should().Contain("'XYZ' is not configured");
     }
 
-    [Fact]
-    public async Task GetByOrganizationAsync_GroupsTheSameAggregationPerOrganization()
-    {
-        _database.SeedOrder(Customer, 100m, _feb2026, organizationId: "org-1");
-        _database.SeedOrder(Customer, 100m, _apr2026, organizationId: "org-1", currency: "EUR");
-        _database.SeedOrder(Customer, 200m, _jun2026, organizationId: "org-2");
-        _database.SeedOrder(Customer, 999m, _jun2026, organizationId: "org-2", isCancelled: true);
-        _database.SeedOrder(Customer, 400m, _jun2026, organizationId: null);
-        _database.SeedOrder(OtherCustomer, 800m, _jun2026, organizationId: "org-1");
-
-        var byOrganization = await CreateService().GetByOrganizationAsync(Criteria());
-
-        // An order without an organization belongs to no group; another customer's order is out of scope.
-        byOrganization.Keys.Should().BeEquivalentTo("org-1", "org-2");
-
-        byOrganization["org-1"].Total.Should().Be(225m);
-        byOrganization["org-1"].Count.Should().Be(2);
-        byOrganization["org-1"].FirstOrderDate.Should().Be(_feb2026);
-        byOrganization["ORG-2"].Total.Should().Be(200m); // keys compare case-insensitively, like every id lookup
-        byOrganization["org-2"].Count.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task GetByOrganizationAsync_AppliesTheOrganizationList()
-    {
-        _database.SeedOrder(Customer, 100m, _feb2026, organizationId: "org-1");
-        _database.SeedOrder(Customer, 200m, _feb2026, organizationId: "org-2");
-
-        var criteria = Criteria();
-        criteria.OrganizationIds = ["org-2"];
-
-        var byOrganization = await CreateService().GetByOrganizationAsync(criteria);
-
-        byOrganization.Should().ContainSingle().Which.Key.Should().Be("org-2");
-
-        criteria.OrganizationIds = [];
-        (await CreateService().GetByOrganizationAsync(criteria)).Should().BeEmpty();
-    }
-
     private OrderStatisticsService CreateService()
     {
         return new OrderStatisticsService(_database.CreateRepository, new TestCurrencyService(), _cache, TestSettingsManager.WithOrderCacheExpiration(0));

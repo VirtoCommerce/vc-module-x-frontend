@@ -52,18 +52,6 @@ public class OrderStatisticsService : IOrderStatisticsService
         return statistics.CloneTyped();
     }
 
-    public virtual async Task<IDictionary<string, OrderStatistics>> GetByOrganizationAsync(OrderStatisticsCriteria criteria)
-    {
-        EnsureCustomerScope(criteria);
-
-        var cacheKey = CacheKey.With(GetType(), nameof(GetByOrganizationAsync), criteria.GetCacheKey());
-        var expirationMinutes = await _settingsManager.GetValueAsync<int>(ModuleConstants.Settings.Statistics.OrderCacheExpirationMinutes);
-
-        var byOrganization = await StatisticsCache.GetOrCreateAsync(_platformMemoryCache, cacheKey, expirationMinutes, () => CreateChangeToken(criteria), () => LoadByOrganizationAsync(criteria));
-
-        return byOrganization.ToDictionary(x => x.Key, x => x.Value.CloneTyped(), StringComparer.OrdinalIgnoreCase);
-    }
-
     protected virtual void EnsureCustomerScope(OrderStatisticsCriteria criteria)
     {
         ArgumentNullException.ThrowIfNull(criteria);
@@ -104,35 +92,6 @@ public class OrderStatisticsService : IOrderStatisticsService
             .ToList();
 
         return ToStatistics(aggregates, currency, currencies);
-    }
-
-    protected virtual async Task<IDictionary<string, OrderStatistics>> LoadByOrganizationAsync(OrderStatisticsCriteria criteria)
-    {
-        var currencies = (await _currencyService.GetAllCurrenciesAsync()).ToList();
-        var currency = GetCurrency(currencies, criteria.CurrencyCode);
-
-        using var repository = _repositoryFactory();
-
-        var rows = await BuildQuery(repository, criteria)
-            .Where(x => x.OrganizationId != null)
-            .GroupBy(x => new { x.OrganizationId, x.Currency })
-            .Select(g => new
-            {
-                g.Key.OrganizationId,
-                g.Key.Currency,
-                Total = g.Sum(x => x.Total),
-                Count = g.Count(),
-                FirstDate = g.Min(x => x.CreatedDate),
-                LastDate = g.Max(x => x.CreatedDate),
-            })
-            .ToListAsync();
-
-        return rows
-            .GroupBy(x => x.OrganizationId, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(
-                g => g.Key,
-                g => ToStatistics(g.Select(x => CreateAggregate(x.Currency, x.Total, x.Count, x.FirstDate, x.LastDate)).ToList(), currency, currencies),
-                StringComparer.OrdinalIgnoreCase);
     }
 
     protected virtual IQueryable<CustomerOrderEntity> BuildQuery(IOrderRepository repository, OrderStatisticsCriteria criteria)
