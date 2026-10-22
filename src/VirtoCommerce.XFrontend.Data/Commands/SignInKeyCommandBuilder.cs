@@ -5,6 +5,7 @@ using GraphQL.Types;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using VirtoCommerce.Platform.Core.Security;
+using VirtoCommerce.Platform.Security.Extensions;
 using VirtoCommerce.Xapi.Core.BaseQueries;
 using VirtoCommerce.Xapi.Core.Extensions;
 using VirtoCommerce.Xapi.Core.Security.Authorization;
@@ -28,7 +29,17 @@ public abstract class SignInKeyCommandBuilder<TCommand, TResult, TCommandGraphTy
             throw AuthorizationError.AnonymousAccessDenied();
         }
 
+        if (context.GetCurrentPrincipal().IsImpersonated())
+        {
+            throw AuthorizationError.Forbidden();
+        }
+
         request.User = await userManagerFactory().FindByIdAsync(context.GetCurrentUserId());
+
+        if (request.User is null)
+        {
+            throw AuthorizationError.AnonymousAccessDenied();
+        }
 
         await base.BeforeMediatorSend(context, request);
     }

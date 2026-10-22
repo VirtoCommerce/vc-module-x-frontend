@@ -29,6 +29,11 @@ public abstract class SignInQueryBuilder<TQuery, TResult, TResultGraphType>(
 
         request.User = await userManagerFactory().FindByIdAsync(context.GetCurrentUserId());
 
+        if (request.User is null)
+        {
+            throw AuthorizationError.AnonymousAccessDenied();
+        }
+
         await base.BeforeMediatorSend(context, request);
     }
 }
