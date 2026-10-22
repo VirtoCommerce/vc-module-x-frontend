@@ -9,9 +9,9 @@ namespace VirtoCommerce.XFrontend.Core.Statistics.Helpers;
 
 public static class CurrencyFold
 {
-    public static CurrencyFoldResult Fold(IEnumerable<CurrencyAggregate> aggregates, Currency currency, IList<Currency> currencies)
+    public static OrderStatistics Fold(IEnumerable<CurrencyAggregate> aggregates, Currency currency, IList<Currency> currencies)
     {
-        var result = AbstractTypeFactory<CurrencyFoldResult>.TryCreateInstance();
+        var result = AbstractTypeFactory<OrderStatistics>.TryCreateInstance();
         result.CurrencyCode = currency.Code;
 
         var total = 0m;
@@ -29,8 +29,8 @@ public static class CurrencyFold
 
             total += new Money(aggregate.Total, sourceCurrency).ConvertTo(currency).InternalAmount;
             result.Count += aggregate.Count;
-            result.FirstDate = Earlier(result.FirstDate, aggregate.FirstDate);
-            result.LastDate = Later(result.LastDate, aggregate.LastDate);
+            result.FirstOrderDate = Earlier(result.FirstOrderDate, aggregate.FirstDate);
+            result.LastOrderDate = Later(result.LastOrderDate, aggregate.LastDate);
         }
 
         result.Total = Round(total, currency);

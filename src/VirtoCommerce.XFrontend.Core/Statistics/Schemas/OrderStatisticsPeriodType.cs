@@ -1,4 +1,5 @@
 using GraphQL.Types;
+using VirtoCommerce.Xapi.Core.Extensions;
 using VirtoCommerce.Xapi.Core.Schemas;
 using VirtoCommerce.XFrontend.Core.Statistics.Models;
 
@@ -12,13 +13,13 @@ public class OrderStatisticsPeriodType : ExtendableGraphType<OrderStatistics>
 
         Field<NonNullGraphType<MoneyType>>("total")
             .Description("Sum of the order totals.")
-            .ResolveAsync(async context => await MoneyResolver.ResolveAsync(context, context.Source.CurrencyCode, context.Source.Total));
+            .Resolve(context => context.Source.Total.ToMoney(context.GetCurrencyByCode(context.Source.CurrencyCode)));
 
         Field(x => x.Count, nullable: false).Description("Number of orders.");
 
         Field<NonNullGraphType<MoneyType>>("average")
             .Description("Average order total.")
-            .ResolveAsync(async context => await MoneyResolver.ResolveAsync(context, context.Source.CurrencyCode, context.Source.Average));
+            .Resolve(context => context.Source.Average.ToMoney(context.GetCurrencyByCode(context.Source.CurrencyCode)));
 
         Field(x => x.FirstOrderDate, nullable: true).Description("Creation date of the earliest order.");
         Field(x => x.LastOrderDate, nullable: true).Description("Creation date of the latest order.");

@@ -118,35 +118,6 @@ public sealed class OrderStatisticsServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetAsync_FiltersByStatuses()
-    {
-        _database.SeedOrder(Customer, 100m, _feb2026, status: "New");
-        _database.SeedOrder(Customer, 200m, _feb2026, status: "Processing");
-        _database.SeedOrder(Customer, 400m, _feb2026, status: "Completed");
-
-        var criteria = Criteria();
-        criteria.Statuses = ["New", "Completed"];
-
-        var statistics = await CreateService().GetAsync(criteria);
-
-        statistics.Total.Should().Be(500m);
-        statistics.Count.Should().Be(2);
-    }
-
-    [Fact]
-    public async Task GetAsync_EmptyStatusList_MatchesNothing()
-    {
-        _database.SeedOrder(Customer, 100m, _feb2026, status: "New");
-
-        var criteria = Criteria();
-        criteria.Statuses = [];
-
-        var statistics = await CreateService().GetAsync(criteria);
-
-        statistics.Count.Should().Be(0);
-    }
-
-    [Fact]
     public async Task GetAsync_DateBoundsAreInclusive()
     {
         // An order at exactly 'from' or exactly 'to' counts; one second outside either bound does not.

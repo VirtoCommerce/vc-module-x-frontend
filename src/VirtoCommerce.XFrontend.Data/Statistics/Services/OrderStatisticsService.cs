@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Primitives;
 using VirtoCommerce.CoreModule.Core.Currency;
 using VirtoCommerce.OrdersModule.Core.Model;
@@ -13,11 +14,9 @@ using VirtoCommerce.Platform.Core.Caching;
 using VirtoCommerce.Platform.Core.Common;
 using VirtoCommerce.Platform.Core.Settings;
 using VirtoCommerce.XFrontend.Core;
-using VirtoCommerce.XFrontend.Core.Statistics.Extensions;
 using VirtoCommerce.XFrontend.Core.Statistics.Helpers;
 using VirtoCommerce.XFrontend.Core.Statistics.Models;
 using VirtoCommerce.XFrontend.Core.Statistics.Services;
-using VirtoCommerce.XFrontend.Data.Statistics.Caching;
 
 namespace VirtoCommerce.XFrontend.Data.Statistics.Services;
 
@@ -44,12 +43,30 @@ public class OrderStatisticsService : IOrderStatisticsService
     {
         EnsureCustomerScope(criteria);
 
-        var cacheKey = CacheKey.With(GetType(), nameof(GetAsync), criteria.GetCacheKey());
         var expirationMinutes = await _settingsManager.GetValueAsync<int>(ModuleConstants.Settings.Statistics.OrderCacheExpirationMinutes);
+        if (expirationMinutes <= 0)
+        {
+            return await LoadAsync(criteria);
+        }
 
-        var statistics = await StatisticsCache.GetOrCreateAsync(_platformMemoryCache, cacheKey, expirationMinutes, () => CreateChangeToken(criteria), () => LoadAsync(criteria));
+        var cacheKey = CacheKey.With(GetType(), nameof(GetAsync), criteria.GetCacheKey());
+        var statistics = await _platformMemoryCache.GetOrCreateExclusiveAsync(cacheKey, async options =>
+        {
+            // Attached before the load, so a change saved while it runs expires the entry instead of being missed.
+            options.AddExpirationToken(CreateChangeToken(criteria));
+            options.AbsoluteExpirationRelativeToNow = ShorterOf(options.AbsoluteExpirationRelativeToNow, TimeSpan.FromMinutes(expirationMinutes));
+            options.SlidingExpiration = null;
+
+            return await LoadAsync(criteria);
+        });
 
         return statistics.CloneTyped();
+    }
+
+    // The platform default may be shorter, e.g. when caching is disabled platform-wide.
+    private static TimeSpan ShorterOf(TimeSpan? configured, TimeSpan expiration)
+    {
+        return configured.HasValue && configured.Value < expiration ? configured.Value : expiration;
     }
 
     protected virtual void EnsureCustomerScope(OrderStatisticsCriteria criteria)
@@ -108,29 +125,22 @@ public class OrderStatisticsService : IOrderStatisticsService
             query = query.Where(x => x.StoreId == criteria.StoreId);
         }
 
-        if (criteria.Statuses != null)
+        if (criteria.FromDate != null)
         {
-            query = query.Where(x => criteria.Statuses.Contains(x.Status));
+            query = query.Where(x => x.CreatedDate >= criteria.FromDate);
         }
 
-        return query.WhereBetween(x => x.CreatedDate, criteria.FromDate, criteria.ToDate);
+        if (criteria.ToDate != null)
+        {
+            query = query.Where(x => x.CreatedDate <= criteria.ToDate);
+        }
+
+        return query;
     }
 
     protected virtual OrderStatistics ToStatistics(IList<CurrencyAggregate> aggregates, Currency currency, IList<Currency> currencies)
     {
-        var folded = CurrencyFold.Fold(aggregates, currency, currencies);
-
-        var result = AbstractTypeFactory<OrderStatistics>.TryCreateInstance();
-        result.CurrencyCode = folded.CurrencyCode;
-        result.Total = folded.Total;
-        result.Count = folded.Count;
-        result.Average = folded.Average;
-        result.FirstOrderDate = folded.FirstDate;
-        result.LastOrderDate = folded.LastDate;
-        result.ExcludedCount = folded.ExcludedCount;
-        result.ExcludedCurrencies = folded.ExcludedCurrencies;
-
-        return result;
+        return CurrencyFold.Fold(aggregates, currency, currencies);
     }
 
     protected virtual Currency GetCurrency(IList<Currency> currencies, string currencyCode)

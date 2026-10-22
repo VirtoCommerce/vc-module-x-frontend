@@ -9,7 +9,7 @@ using Xunit;
 
 namespace VirtoCommerce.XFrontend.Tests.Statistics;
 
-/// <summary>The shared statistics helpers that consumers (sales-rep folds and comparisons) reuse directly.</summary>
+/// <summary>The statistics helpers: the currency fold and the comparison math.</summary>
 [Trait("Category", "Unit")]
 public class StatisticsHelpersTests
 {
@@ -48,8 +48,8 @@ public class StatisticsHelpersTests
         folded.Total.Should().Be(135.01m); // 10.005 + 125, rounded half away from zero
         folded.Count.Should().Be(3);
         folded.Average.Should().Be(45m); // 135.005 / 3, from the unrounded total
-        folded.FirstDate.Should().Be(new DateTime(2026, 2, 1));
-        folded.LastDate.Should().Be(new DateTime(2026, 3, 1));
+        folded.FirstOrderDate.Should().Be(new DateTime(2026, 2, 1));
+        folded.LastOrderDate.Should().Be(new DateTime(2026, 3, 1));
         folded.ExcludedCount.Should().Be(3);
         folded.ExcludedCurrencies.Should().Equal("GBP");
     }
@@ -64,8 +64,8 @@ public class StatisticsHelpersTests
         folded.Total.Should().Be(0m);
         folded.Count.Should().Be(0);
         folded.Average.Should().Be(0m);
-        folded.FirstDate.Should().BeNull();
-        folded.LastDate.Should().BeNull();
+        folded.FirstOrderDate.Should().BeNull();
+        folded.LastOrderDate.Should().BeNull();
         folded.ExcludedCount.Should().Be(0);
     }
 

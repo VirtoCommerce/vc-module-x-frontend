@@ -29,11 +29,16 @@ public class SaveLayoutCommandHandler : IRequestHandler<SaveLayoutCommand, Layou
         await _validator.ValidateAndThrowAsync(request, cancellationToken);
         await EnsureStoreExistsAsync(request.StoreId);
 
+        return await _layoutService.SaveLayoutAsync(request.UserId, request.Scope, ToLayout(request), request.StoreId);
+    }
+
+    protected virtual Layout ToLayout(SaveLayoutCommand request)
+    {
         var layout = AbstractTypeFactory<Layout>.TryCreateInstance();
         layout.SchemaVersion = request.SchemaVersion;
         layout.Regions = request.Regions;
 
-        return await _layoutService.SaveLayoutAsync(request.UserId, request.Scope, layout, request.StoreId);
+        return layout;
     }
 
     protected virtual async Task EnsureStoreExistsAsync(string storeId)

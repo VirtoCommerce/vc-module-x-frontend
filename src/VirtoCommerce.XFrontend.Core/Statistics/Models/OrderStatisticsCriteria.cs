@@ -12,8 +12,6 @@ public class OrderStatisticsCriteria : ValueObject
 
     public string StoreId { get; set; }
 
-    public IList<string> Statuses { get; set; }
-
     public DateTime? FromDate { get; set; }
 
     public DateTime? ToDate { get; set; }

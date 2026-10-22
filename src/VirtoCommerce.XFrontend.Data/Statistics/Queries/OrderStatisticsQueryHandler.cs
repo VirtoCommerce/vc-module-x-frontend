@@ -20,11 +20,6 @@ public class OrderStatisticsQueryHandler : IQueryHandler<OrderStatisticsQuery, O
 
     public virtual async Task<OrderStatisticsContext> Handle(OrderStatisticsQuery request, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(request.CustomerId))
-        {
-            return null;
-        }
-
         var result = AbstractTypeFactory<OrderStatisticsContext>.TryCreateInstance();
         result.CustomerId = request.CustomerId;
         result.OrganizationIds = string.IsNullOrEmpty(request.OrganizationId) ? null : [request.OrganizationId];
