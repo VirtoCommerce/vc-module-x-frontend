@@ -149,6 +149,7 @@ mutation {
 - `scope`: a letter followed by up to 63 letters or digits. No dots: the preference name joins its parts with dots.
 - `storeId`: up to 128 letters, digits, `_` or `-`, naming an existing store.
 - Region ids, block ids and block types: 1 to 64 letters, digits, `_` or `-`.
+- A block id appears only once in the layout, across all regions and ignoring case.
 - At most 20 regions, 50 blocks per region and 50 settings per block.
 - Setting keys up to 64 characters; each setting value up to 4 KB and the whole layout up to 64 KB as JSON.
 - At most 20 layouts per user; saving over an existing layout is always allowed.

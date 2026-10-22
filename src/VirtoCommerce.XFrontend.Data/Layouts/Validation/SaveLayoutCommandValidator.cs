@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Text;
 using FluentValidation;
 using Newtonsoft.Json;
@@ -22,6 +24,11 @@ public class SaveLayoutCommandValidator : AbstractValidator<SaveLayoutCommand>
         RuleFor(x => x.Regions)
             .Must(x => Encoding.UTF8.GetByteCount(JsonConvert.SerializeObject(x)) <= ModuleConstants.Layouts.MaxLayoutSize)
             .WithMessage($"A layout must not exceed {ModuleConstants.Layouts.MaxLayoutSize} bytes as JSON.");
+
+        // Across regions too: the storefront keeps one block per id.
+        RuleFor(x => x.Regions)
+            .Must(x => x.SelectMany(region => region.Blocks).GroupBy(block => block.Id, StringComparer.OrdinalIgnoreCase).All(group => group.Count() == 1))
+            .WithMessage("A block id can appear only once in a layout.");
 
         RuleForEach(x => x.Regions).SetValidator(new LayoutRegionValidator());
     }

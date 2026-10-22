@@ -14,14 +14,11 @@ namespace VirtoCommerce.XFrontend.Data.Statistics.Queries;
 
 public class OrderStatisticsQueryBuilder : QueryBuilder<OrderStatisticsQuery, OrderStatisticsContext, OrderStatisticsType>
 {
-    private readonly ICurrencyService _currencyService;
-
     protected override string Name => "orderStatistics";
 
-    public OrderStatisticsQueryBuilder(IAuthorizationService authorizationService, ICurrencyService currencyService)
+    public OrderStatisticsQueryBuilder(IAuthorizationService authorizationService)
         : base(authorizationService)
     {
-        _currencyService = currencyService;
     }
 
     protected override async Task BeforeMediatorSend(IResolveFieldContext<object> context, OrderStatisticsQuery request)
@@ -31,6 +28,7 @@ public class OrderStatisticsQueryBuilder : QueryBuilder<OrderStatisticsQuery, Or
         await context.RequestServices.GetRequiredService<IUserManagerCore>().CheckCurrentUserState(context, allowAnonymous: false);
 
         // The money fields format in the requested culture, from this one list.
-        context.SetCurrencies(await _currencyService.GetAllCurrenciesAsync(), request.CultureName);
+        var currencies = await context.RequestServices.GetRequiredService<ICurrencyService>().GetAllCurrenciesAsync();
+        context.SetCurrencies(currencies, request.CultureName);
     }
 }

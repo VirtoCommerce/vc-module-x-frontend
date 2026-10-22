@@ -129,6 +129,20 @@ public class SaveLayoutCommandValidatorTests
     }
 
     [Fact]
+    public void BlockId_RepeatedAnywhereInTheLayout_IsRejected()
+    {
+        // The storefront keeps one block per id, so a repeat would lose an entry on the next load. Ids compare
+        // ignoring case, like every id compared in memory.
+        var inOneRegion = Command(Region("mainLeft", Block("orders"), Block("orders")));
+        var acrossRegions = Command(Region("mainLeft", Block("orders")), Region("mainRight", Block("orders")));
+        var inAnotherCase = Command(Region("mainLeft", Block("orders"), Block("Orders")));
+
+        ErrorsOf(inOneRegion).Should().Equal(nameof(SaveLayoutCommand.Regions));
+        ErrorsOf(acrossRegions).Should().Equal(nameof(SaveLayoutCommand.Regions));
+        ErrorsOf(inAnotherCase).Should().Equal(nameof(SaveLayoutCommand.Regions));
+    }
+
+    [Fact]
     public void TooManyRegions_IsRejected()
     {
         var atLimit = Command(Enumerable.Range(0, 20).Select(x => Region($"r{x}")).ToArray());
@@ -180,7 +194,7 @@ public class SaveLayoutCommandValidatorTests
     {
         var value = new string('v', 1000);
         var regions = Enumerable.Range(0, 2)
-            .Select(r => Region($"r{r}", Enumerable.Range(0, 40).Select(b => Block($"b{b}", ("text", value))).ToArray()))
+            .Select(r => Region($"r{r}", Enumerable.Range(0, 40).Select(b => Block($"r{r}b{b}", ("text", value))).ToArray()))
             .ToArray();
 
         ErrorsOf(Command(regions)).Should().Equal(nameof(SaveLayoutCommand.Regions));
