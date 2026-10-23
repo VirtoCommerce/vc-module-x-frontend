@@ -33,6 +33,10 @@
     "XFrontend.BrandProfile.FoundingDate": {
       "title": "Perustamispäivä",
       "description": "Yrityksen perustamispäivä ISO 8601 -muodossa. Esimerkki: '1998-04-01'"
+    },
+    "XFrontend.Statistics.Order.CacheExpirationMinutes": {
+      "title": "Tilaustilastojen välimuistin kesto (minuuttia)",
+      "description": "Kuinka kauan kaupan koontinäyttöjen tilaustilastot säilytetään välimuistissa, minuutteina; 0 poistaa välimuistin käytöstä, ja alustan Caching:CacheAbsoluteExpiration on voimassa, jos se on pienempi. Asiakkaan tilauksen tallentaminen tai poistaminen Orders-moduulin kautta päivittää asiakkaan luvut sillä instanssilla, joka käsitteli muutoksen (kaikilla instansseilla vain Redis-välimuistin backplanen kanssa), kun taas muut muutokset, myös valuuttojen ja valuuttakurssien muokkaukset, näkyvät vasta vanhenemisen jälkeen"
     }
   }
 }

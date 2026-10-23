@@ -33,6 +33,10 @@
     "XFrontend.BrandProfile.FoundingDate": {
       "title": "Data de fundação",
       "description": "Data de fundação da empresa no formato ISO 8601. Exemplo: '1998-04-01'"
+    },
+    "XFrontend.Statistics.Order.CacheExpirationMinutes": {
+      "title": "Duração do cache das estatísticas de pedidos (minutos)",
+      "description": "Por quanto tempo, em minutos, as estatísticas de pedidos dos painéis da loja ficam em cache; 0 desativa o cache e, se for menor, vale o valor Caching:CacheAbsoluteExpiration da plataforma. Salvar ou excluir um pedido de um cliente pelo módulo Orders atualiza os números dele na instância que processou a alteração (em todas as instâncias apenas com o backplane de cache Redis), enquanto as demais alterações, incluindo edições de moedas e taxas de câmbio, aguardam a expiração"
     }
   }
 }

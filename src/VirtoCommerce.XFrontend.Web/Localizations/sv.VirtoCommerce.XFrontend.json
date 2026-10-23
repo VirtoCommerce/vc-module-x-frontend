@@ -33,6 +33,10 @@
     "XFrontend.BrandProfile.FoundingDate": {
       "title": "Grundningsdatum",
       "description": "Datum då företaget grundades, i ISO 8601-format. Exempel: '1998-04-01'"
+    },
+    "XFrontend.Statistics.Order.CacheExpirationMinutes": {
+      "title": "Cachetid för orderstatistik (minuter)",
+      "description": "Hur länge orderstatistiken på butikens instrumentpaneler cachelagras, i minuter; 0 inaktiverar cachelagring, och plattformens Caching:CacheAbsoluteExpiration gäller om den är lägre. När en av kundens ordrar sparas eller tas bort via Orders-modulen uppdateras kundens siffror på den instans som hanterade ändringen (på alla instanser endast med Redis-cachens backplane), medan andra ändringar, även av valutor och växelkurser, väntar tills cachen löper ut"
     }
   }
 }
