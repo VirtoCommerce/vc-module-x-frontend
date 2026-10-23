@@ -1,4 +1,5 @@
 using FluentValidation;
+using VirtoCommerce.Platform.Core.Common;
 using VirtoCommerce.XFrontend.Core;
 using VirtoCommerce.XFrontend.Core.Layouts.Models;
 
@@ -15,6 +16,6 @@ public class LayoutBlockValidator : AbstractValidator<LayoutBlock>
             .Must(x => x.Count <= ModuleConstants.Layouts.MaxSettingsPerBlock)
             .WithMessage($"A block can have at most {ModuleConstants.Layouts.MaxSettingsPerBlock} settings.");
 
-        RuleForEach(x => x.Settings).SetValidator(new LayoutSettingValidator());
+        RuleForEach(x => x.Settings).SetValidator(AbstractTypeFactory<LayoutSettingValidator>.TryCreateInstance());
     }
 }

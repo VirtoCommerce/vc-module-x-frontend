@@ -105,7 +105,7 @@ query {
     }
     monthOverMonth: comparison(
       current: { from: "2026-10-01T00:00:00Z" }
-      previous: { from: "2026-09-01T00:00:00Z", to: "2026-09-30T23:59:59Z" }
+      previous: { from: "2026-09-01T00:00:00Z", to: "2026-09-30T23:59:59.999Z" }
     ) {
       totalChange { formattedAmount }
       totalChangePercent

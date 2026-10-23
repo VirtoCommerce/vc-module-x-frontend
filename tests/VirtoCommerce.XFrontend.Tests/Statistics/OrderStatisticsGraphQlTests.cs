@@ -268,6 +268,30 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
         fromNothing.GetProperty("countChangePercent").ValueKind.Should().Be(JsonValueKind.Null);
     }
 
+    [Fact]
+    public async Task FormattedAmounts_FollowTheRequestedCulture()
+    {
+        _context.Statistics.Result = criteria => Statistics(criteria, total: 600m, count: 3, average: 200m);
+
+        (await FormattedTotal("en-US")).Should().Contain("600.00");
+        (await FormattedTotal("de-DE")).Should().Contain("600,00");
+    }
+
+    private async Task<string> FormattedTotal(string cultureName)
+    {
+        var json = await _context.ExecuteAsync(
+            $$"""
+              query {
+                orderStatistics(currencyCode: "USD", cultureName: "{{cultureName}}") {
+                  ytd: period({{YearToDate}}) { total { formattedAmount } }
+                }
+              }
+              """,
+            User);
+
+        return GraphQlTestContext.Data(json, "orderStatistics").GetProperty("ytd").GetProperty("total").GetProperty("formattedAmount").GetString();
+    }
+
     private static string Query(string arguments)
     {
         return $$"""

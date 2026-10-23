@@ -1,4 +1,5 @@
 using FluentValidation;
+using VirtoCommerce.Platform.Core.Common;
 using VirtoCommerce.XFrontend.Core;
 using VirtoCommerce.XFrontend.Core.Layouts.Models;
 
@@ -14,6 +15,6 @@ public class LayoutRegionValidator : AbstractValidator<LayoutRegion>
             .Must(x => x.Count <= ModuleConstants.Layouts.MaxBlocksPerRegion)
             .WithMessage($"A region can have at most {ModuleConstants.Layouts.MaxBlocksPerRegion} blocks.");
 
-        RuleForEach(x => x.Blocks).SetValidator(new LayoutBlockValidator());
+        RuleForEach(x => x.Blocks).SetValidator(AbstractTypeFactory<LayoutBlockValidator>.TryCreateInstance());
     }
 }

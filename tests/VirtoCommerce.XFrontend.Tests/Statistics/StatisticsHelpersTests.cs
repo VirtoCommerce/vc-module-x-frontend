@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using VirtoCommerce.CoreModule.Core.Common;
+using VirtoCommerce.CoreModule.Core.Currency;
 using VirtoCommerce.XFrontend.Core.Statistics.Helpers;
 using VirtoCommerce.XFrontend.Core.Statistics.Models;
 using VirtoCommerce.XFrontend.Tests.Infrastructure;
@@ -67,6 +69,22 @@ public class StatisticsHelpersTests
         folded.FirstOrderDate.Should().BeNull();
         folded.LastOrderDate.Should().BeNull();
         folded.ExcludedCount.Should().Be(0);
+    }
+
+    [Fact]
+    public void Fold_RoundsTheWayTheCurrencyIsConfigured()
+    {
+        // Cash rounding up to 0.05, as for Swiss francs: the figures round like Money does, not to plain decimal digits.
+        var chf = new Currency(Language.InvariantLanguage, "CHF", "Swiss Franc", "CHF", 1m)
+        {
+            RoundingType = "Rounding005Up",
+            RoundingPolicy = new DefaultMoneyRoundingPolicy(),
+        };
+
+        var folded = CurrencyFold.Fold([Aggregate("CHF", 10.01m, 2, new DateTime(2026, 3, 1))], chf, [chf]);
+
+        folded.Total.Should().Be(10.05m);
+        folded.Average.Should().Be(5.05m); // 10.01 / 2 = 5.005, rounded up to the next 0.05
     }
 
     private static CurrencyAggregate Aggregate(string currencyCode, decimal total, int count, DateTime date)

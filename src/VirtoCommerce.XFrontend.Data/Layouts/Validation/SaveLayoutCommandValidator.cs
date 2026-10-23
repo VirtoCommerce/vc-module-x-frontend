@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using FluentValidation;
 using Newtonsoft.Json;
+using VirtoCommerce.Platform.Core.Common;
 using VirtoCommerce.XFrontend.Core;
 using VirtoCommerce.XFrontend.Core.Layouts.Commands;
 
@@ -30,6 +31,6 @@ public class SaveLayoutCommandValidator : AbstractValidator<SaveLayoutCommand>
             .Must(x => x.SelectMany(region => region.Blocks).GroupBy(block => block.Id, StringComparer.OrdinalIgnoreCase).All(group => group.Count() == 1))
             .WithMessage("A block id can appear only once in a layout.");
 
-        RuleForEach(x => x.Regions).SetValidator(new LayoutRegionValidator());
+        RuleForEach(x => x.Regions).SetValidator(AbstractTypeFactory<LayoutRegionValidator>.TryCreateInstance());
     }
 }

@@ -39,9 +39,10 @@ public static class CurrencyFold
         return result;
     }
 
+    // The currency's own rounding (decimal digits, midpoint mode, cash rounding), the way Money applies it.
     private static decimal Round(decimal amount, Currency currency)
     {
-        return Math.Round(amount, currency.DecimalDigits, MidpointRounding.AwayFromZero);
+        return new Money(amount, currency).Amount;
     }
 
     private static DateTime? Earlier(DateTime? current, DateTime? candidate)
