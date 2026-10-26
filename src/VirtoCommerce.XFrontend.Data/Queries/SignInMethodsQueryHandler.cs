@@ -13,6 +13,18 @@ public class SignInMethodsQueryHandler(
 {
     public virtual async Task<IList<SignInMethod>> Handle(SignInMethodsQuery request, CancellationToken cancellationToken)
     {
-        return await signInMethodService.GetSignInMethodsAsync(request.User);
+        var signInMethods = await signInMethodService.GetSignInMethodsAsync(request.User);
+
+        if (request.IsImpersonated)
+        {
+            foreach (var signInMethod in signInMethods)
+            {
+                signInMethod.CanCreateKey = false;
+                signInMethod.CanRenameKey = false;
+                signInMethod.CanDeleteKey = false;
+            }
+        }
+
+        return signInMethods;
     }
 }
