@@ -71,26 +71,34 @@ public class PageContextQueryHandler : IQueryHandler<PageContextQuery, PageConte
 
     protected virtual async Task<ApplicationUser> GetUserAsync(PageContextQuery request)
     {
-        ApplicationUser result;
-
         if (request.IsAnonymous)
         {
-            result = AnonymousUser.Instance;
+            var userId = !request.UserId.IsNullOrEmpty() && !await UserExistsAsync(request.UserId)
+                ? request.UserId
+                : null;
 
-            if (!request.UserId.IsNullOrEmpty() && !await UserExistsAsync(request.UserId))
-            {
-                result.Id = request.UserId;
-            }
+            return CreateAnonymousUser(userId);
         }
-        else
+
+        var user = await _mediator.Send(new GetUserQuery
         {
-            result = await _mediator.Send(new GetUserQuery
-            {
-                UserName = request.UserName,
-            });
+            UserName = request.UserName,
+        });
+
+        // Edge case: the user is authenticated but has been deleted
+        return user ?? CreateAnonymousUser(request.UserId);
+    }
+
+    private static AnonymousUser CreateAnonymousUser(string userId)
+    {
+        var user = AnonymousUser.Instance;
+
+        if (!userId.IsNullOrEmpty())
+        {
+            user.Id = userId;
         }
 
-        return result;
+        return user;
     }
 
     protected virtual Task<StoreResponse> GetStoreAsync(PageContextQuery request) => _mediator.Send(new GetStoreQuery
