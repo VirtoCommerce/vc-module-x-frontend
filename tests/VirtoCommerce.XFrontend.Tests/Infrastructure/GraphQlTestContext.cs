@@ -28,6 +28,7 @@ using VirtoCommerce.XFrontend.Core.Layouts.Commands;
 using VirtoCommerce.XFrontend.Core.Layouts.Services;
 using VirtoCommerce.XFrontend.Core.Statistics.Services;
 using VirtoCommerce.XFrontend.Data;
+using VirtoCommerce.XFrontend.Data.Commands;
 using VirtoCommerce.XFrontend.Data.Layouts.Services;
 using VirtoCommerce.XFrontend.Data.Layouts.Validation;
 using VirtoCommerce.XFrontend.Data.Queries;
@@ -88,8 +89,19 @@ public sealed class GraphQlTestContext : IDisposable
             builder.AddDataLoader();
         });
 
-        // pageContext returns the profile and white-labeling graphs, which are not what these tests are about.
-        services.Remove(services.Single(x => x.ServiceType == typeof(ISchemaBuilder) && x.ImplementationType == typeof(PageContextQueryBuilder)));
+        // pageContext returns the profile and white-labeling graphs, which are not what these tests are about. Neither are
+        // the sign-in builders: they need the platform's user manager and return profile graphs (`IdentityResultType`).
+        Type[] unrelatedBuilders =
+        [
+            typeof(PageContextQueryBuilder),
+            typeof(SignInMethodsQueryBuilder),
+            typeof(DeleteSignInKeyCommandBuilder),
+            typeof(RenameSignInKeyCommandBuilder),
+        ];
+        foreach (var builderType in unrelatedBuilders)
+        {
+            services.Remove(services.Single(x => x.ServiceType == typeof(ISchemaBuilder) && x.ImplementationType == builderType));
+        }
 
         services.AddSingleton<SchemaFactory>();
 
