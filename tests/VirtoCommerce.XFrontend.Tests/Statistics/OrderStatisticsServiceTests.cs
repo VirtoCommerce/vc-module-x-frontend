@@ -254,6 +254,55 @@ public sealed class OrderStatisticsServiceTests : IDisposable
         (await action.Should().ThrowAsync<ArgumentException>()).Which.Message.Should().Contain("'XYZ' is not configured");
     }
 
+    [Fact]
+    public async Task GetAsync_OrganizationScope_CountsEveryCustomersOrdersOfTheOrganization()
+    {
+        // VCST-6654: every non-cancelled order of the organization, whoever placed it; other organizations' orders,
+        // even by the same customers, stay out.
+        _database.SeedOrder(Customer, 100m, _feb2026, organizationId: "org-1");
+        _database.SeedOrder(OtherCustomer, 200m, _feb2026, organizationId: "org-1");
+        _database.SeedOrder("former-member", 400m, _feb2026, organizationId: "org-1");
+        _database.SeedOrder(Customer, 800m, _feb2026, organizationId: "org-2");
+        _database.SeedOrder(OtherCustomer, 1600m, _feb2026, organizationId: "org-1", isCancelled: true);
+
+        var statistics = await CreateService().GetAsync(OrganizationCriteria("org-1"));
+
+        statistics.Total.Should().Be(700m);
+        statistics.Count.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task GetAsync_MemberScope_CountsOnlyTheMembersAccountsInTheOrganization()
+    {
+        _database.SeedOrder(Customer, 100m, _feb2026, organizationId: "org-1");
+        _database.SeedOrder("customer-1-second-account", 200m, _feb2026, organizationId: "org-1");
+        _database.SeedOrder(OtherCustomer, 400m, _feb2026, organizationId: "org-1");
+        _database.SeedOrder(Customer, 800m, _feb2026, organizationId: "org-2");
+
+        var criteria = OrganizationCriteria("org-1");
+        criteria.CustomerIds = [Customer, "customer-1-second-account"];
+
+        var statistics = await CreateService().GetAsync(criteria);
+
+        statistics.Total.Should().Be(300m);
+        statistics.Count.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task GetAsync_MemberWithoutAccounts_MatchesNothing()
+    {
+        // A member who has no account has placed no order: an empty list must never widen to the whole organization.
+        _database.SeedOrder(Customer, 100m, _feb2026, organizationId: "org-1");
+
+        var criteria = OrganizationCriteria("org-1");
+        criteria.CustomerIds = [];
+
+        var statistics = await CreateService().GetAsync(criteria);
+
+        statistics.Count.Should().Be(0);
+        statistics.Total.Should().Be(0m);
+    }
+
     private OrderStatisticsService CreateService()
     {
         return new OrderStatisticsService(_database.CreateRepository, new TestCurrencyService(), _cache, TestSettingsManager.WithOrderCacheExpiration(0));
@@ -264,6 +313,15 @@ public sealed class OrderStatisticsServiceTests : IDisposable
         return new OrderStatisticsCriteria
         {
             CustomerId = Customer,
+            CurrencyCode = "USD",
+        };
+    }
+
+    private static OrderStatisticsCriteria OrganizationCriteria(string organizationId)
+    {
+        return new OrderStatisticsCriteria
+        {
+            OrganizationIds = [organizationId],
             CurrencyCode = "USD",
         };
     }

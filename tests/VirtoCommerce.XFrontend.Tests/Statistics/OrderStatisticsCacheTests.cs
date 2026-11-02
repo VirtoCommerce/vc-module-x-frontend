@@ -211,16 +211,77 @@ public sealed class OrderStatisticsCacheTests : IDisposable
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public async Task CriteriaWithoutCustomer_IsRefused(string customerId)
+    public async Task CriteriaWithoutCustomerOrOrganization_IsRefused(string customerId)
     {
-        // The entries are invalidated per customer: a criteria without one would have no token to expire.
+        // The entries are invalidated per customer or per organization: a criteria naming neither has no token to expire.
         using var cache = new RecordingPlatformMemoryCache();
         var service = CreateService(cache, minutes: 5);
 
         var getAction = () => service.GetAsync(Criteria(customerId));
 
-        (await getAction.Should().ThrowAsync<ArgumentException>()).Which.Message.Should().Contain("CustomerId is required");
+        (await getAction.Should().ThrowAsync<ArgumentException>()).Which.Message.Should().Contain("CustomerId or OrganizationIds is required");
         service.Loads.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task OrganizationEntry_ExpiresWhenAnyOrderChanges()
+    {
+        // VCST-6654: an organization has no key of its own, so the search region (expired for every saved order) is its
+        // token. Another member's new order must show.
+        using var cache = new RecordingPlatformMemoryCache();
+        var service = CreateService(cache, minutes: 5);
+        var organization = Guid.NewGuid().ToString("N");
+        _database.SeedOrder(_customer, 100m, _feb2026, organizationId: organization);
+
+        (await service.GetAsync(OrganizationCriteria(organization))).Total.Should().Be(100m);
+
+        var orderId = _database.SeedOrder(_otherCustomer, 200m, _feb2026, organizationId: organization);
+        ClearOrderCache(orderId, _otherCustomer);
+
+        (await service.GetAsync(OrganizationCriteria(organization))).Total.Should().Be(300m);
+        service.Loads.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task MemberEntry_ExpiresOnlyWithTheMembersOrders()
+    {
+        using var cache = new RecordingPlatformMemoryCache();
+        var service = CreateService(cache, minutes: 5);
+        var organization = Guid.NewGuid().ToString("N");
+        _database.SeedOrder(_customer, 100m, _feb2026, organizationId: organization);
+        var otherOrderId = _database.SeedOrder(_otherCustomer, 200m, _feb2026, organizationId: organization);
+
+        (await service.GetAsync(MemberCriteria(organization, _customer))).Total.Should().Be(100m);
+
+        // Another member's order expires the search region, not the member's own key.
+        ClearOrderCache(otherOrderId, _otherCustomer);
+        await service.GetAsync(MemberCriteria(organization, _customer));
+        service.Loads.Should().Be(1);
+
+        var orderId = _database.SeedOrder(_customer, 50m, _feb2026, organizationId: organization);
+        ClearOrderCache(orderId, _customer);
+
+        (await service.GetAsync(MemberCriteria(organization, _customer))).Total.Should().Be(150m);
+        service.Loads.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task OwnOrganizationAndMemberFigures_NeverShareAnEntry()
+    {
+        // The same orders seen three ways: the key must carry the scope, or one would be served the other's figures.
+        using var cache = new RecordingPlatformMemoryCache();
+        var service = CreateService(cache, minutes: 5);
+        var organization = Guid.NewGuid().ToString("N");
+        _database.SeedOrder(_customer, 100m, _feb2026, organizationId: organization);
+        _database.SeedOrder(_otherCustomer, 200m, _feb2026, organizationId: organization);
+
+        var own = Criteria(_customer);
+        own.OrganizationIds = [organization];
+
+        (await service.GetAsync(own)).Total.Should().Be(100m);
+        (await service.GetAsync(OrganizationCriteria(organization))).Total.Should().Be(300m);
+        (await service.GetAsync(MemberCriteria(organization, _otherCustomer))).Total.Should().Be(200m);
+        service.Loads.Should().Be(3);
     }
 
     private static void ClearOrderCache(string orderId, string customerId)
@@ -243,6 +304,23 @@ public sealed class OrderStatisticsCacheTests : IDisposable
             CustomerId = customerId,
             CurrencyCode = "USD",
         };
+    }
+
+    private static OrderStatisticsCriteria OrganizationCriteria(string organizationId)
+    {
+        return new OrderStatisticsCriteria
+        {
+            OrganizationIds = [organizationId],
+            CurrencyCode = "USD",
+        };
+    }
+
+    private static OrderStatisticsCriteria MemberCriteria(string organizationId, string accountId)
+    {
+        var criteria = OrganizationCriteria(organizationId);
+        criteria.CustomerIds = [accountId];
+
+        return criteria;
     }
 
     /// <summary>Counts database aggregations through the <c>BuildQuery</c> seam and can act in the middle of one.</summary>
