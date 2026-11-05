@@ -123,7 +123,7 @@ Results are cached per customer for `XFrontend.Statistics.Order.CacheExpirationM
 
 ## Dashboard Layouts
 
-The `layout` query returns the signed-in user's saved layout of a dashboard, or `null` when none was saved. The `saveLayout` mutation replaces it as a whole. Both refuse anonymous users and locked or expired accounts and always work on the current user's own layout.
+The `layout` query returns the signed-in user's saved layout of a dashboard, or `null` when none was saved. A stored layout that cannot be read (the customer preferences API can store any value under its name) is logged as a warning and returned as `null` too, so the client shows its default and the next save replaces it. The `saveLayout` mutation replaces it as a whole. Both refuse anonymous users and locked or expired accounts and always work on the current user's own layout.
 
 A layout is stored as a customer preference named `Layout.{scope}`, or `Layout.{scope}.{storeId}` when a store is given, so every user keeps one layout per dashboard and store. The scope is chosen by the storefront, for example `accountDashboard`.
 
@@ -152,7 +152,7 @@ mutation {
 - A block id appears only once in the layout, across all regions and ignoring case.
 - At most 20 regions, 50 blocks per region and 50 settings per block.
 - Setting keys up to 64 characters; each setting value up to 4 KB and the whole layout up to 64 KB as JSON.
-- At most 20 layouts per user; saving over an existing layout is always allowed.
+- At most 20 layouts per user; saving over an existing layout is always allowed. The cap is checked without a lock, so first saves sent at the same moment (for example in one batched request) can each pass it.
 
 ## Dependencies
 

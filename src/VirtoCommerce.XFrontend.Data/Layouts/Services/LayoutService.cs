@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using VirtoCommerce.CustomerModule.Core.Model;
 using VirtoCommerce.CustomerModule.Core.Services;
@@ -28,11 +29,16 @@ public class LayoutService : ILayoutService
 
     private readonly ICustomerPreferenceService _customerPreferenceService;
     private readonly ICustomerPreferenceSearchService _customerPreferenceSearchService;
+    private readonly ILogger<LayoutService> _logger;
 
-    public LayoutService(ICustomerPreferenceService customerPreferenceService, ICustomerPreferenceSearchService customerPreferenceSearchService)
+    public LayoutService(
+        ICustomerPreferenceService customerPreferenceService,
+        ICustomerPreferenceSearchService customerPreferenceSearchService,
+        ILogger<LayoutService> logger)
     {
         _customerPreferenceService = customerPreferenceService;
         _customerPreferenceSearchService = customerPreferenceSearchService;
+        _logger = logger;
     }
 
     protected virtual JsonSerializerSettings SerializerSettings => _defaultSerializerSettings;
@@ -43,10 +49,22 @@ public class LayoutService : ILayoutService
         ArgumentException.ThrowIfNullOrEmpty(scope);
 
         var value = await _customerPreferenceService.GetValue(userId, BuildNameParts(scope, storeId));
+        if (string.IsNullOrEmpty(value))
+        {
+            return null;
+        }
 
-        return string.IsNullOrEmpty(value)
-            ? null
-            : JsonConvert.DeserializeObject<Layout>(value, SerializerSettings);
+        try
+        {
+            return JsonConvert.DeserializeObject<Layout>(value, SerializerSettings);
+        }
+        catch (JsonException ex)
+        {
+            // The customer preferences API can store any value under this name. Read as none, the dashboard shows its
+            // default and stays editable, and the user's next save replaces the value.
+            _logger.LogWarning(ex, "Layout {Scope} of user {UserId} in store {StoreId} cannot be read and is ignored.", scope, userId, storeId);
+            return null;
+        }
     }
 
     public virtual async Task<Layout> SaveLayoutAsync(string userId, string scope, Layout layout, string storeId)
