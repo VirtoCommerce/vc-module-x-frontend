@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using VirtoCommerce.CoreModule.Core.Currency;
+using VirtoCommerce.CustomerModule.Core.Model;
 using VirtoCommerce.CustomerModule.Core.Services;
 using VirtoCommerce.Platform.Core;
 using VirtoCommerce.Platform.Core.Security;
@@ -54,6 +55,7 @@ public sealed class GraphQlTestContext : IDisposable
     private readonly ServiceProvider _provider;
     private readonly Dictionary<string, ApplicationUser> _users = [];
     private readonly HashSet<string> _lockedUserIds = [];
+    private readonly Dictionary<string, Member> _members = [];
 
     public GraphQlTestContext()
     {
@@ -79,6 +81,7 @@ public sealed class GraphQlTestContext : IDisposable
         services.AddTransient<ILayoutService, LayoutService>();
         services.AddTransient<AbstractValidator<SaveLayoutCommand>, SaveLayoutCommandValidator>();
         services.AddSingleton<IUserManagerCore>(new UserManagerCore(CreateUserManager, requestScopedCacheAccessor: null));
+        services.AddSingleton(CreateMemberService());
 
         services.AddGraphQL(builder =>
         {
@@ -134,8 +137,22 @@ public sealed class GraphQlTestContext : IDisposable
         }
     }
 
-    /// <summary>Executes as a signed-in user; <paramref name="organizationId"/> becomes the token's organization claim.</summary>
-    public Task<string> ExecuteAsync(string query, string userId, string organizationId = null)
+    /// <summary>A contact of the given organizations with the given security accounts, for the member scope.</summary>
+    public void AddContact(string contactId, IList<string> organizationIds, params string[] accountIds)
+    {
+        _members[contactId] = new Contact
+        {
+            Id = contactId,
+            Organizations = [.. organizationIds],
+            SecurityAccounts = accountIds.Select(x => new ApplicationUser { Id = x, UserName = x }).ToList(),
+        };
+    }
+
+    /// <summary>
+    /// Executes as a signed-in user; <paramref name="organizationId"/> becomes the token's organization claim and each of
+    /// <paramref name="permissions"/> a permission claim, as the platform issues them for that organization's roles.
+    /// </summary>
+    public Task<string> ExecuteAsync(string query, string userId, string organizationId = null, params string[] permissions)
     {
         var identity = new ClaimsIdentity(authenticationType: "Test");
         identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userId));
@@ -143,6 +160,11 @@ public sealed class GraphQlTestContext : IDisposable
         if (organizationId != null)
         {
             identity.AddClaim(new Claim(CustomerModuleConstants.Security.Claims.OrganizationId, organizationId));
+        }
+
+        foreach (var permission in permissions)
+        {
+            identity.AddClaim(new Claim(PlatformConstants.Security.Claims.PermissionClaimType, permission));
         }
 
         if (_users.TryGetValue(userId, out var user) && user.IsAdministrator)
@@ -203,6 +225,17 @@ public sealed class GraphQlTestContext : IDisposable
         });
 
         return scope.ServiceProvider.GetRequiredService<IGraphQLTextSerializer>().Serialize(result);
+    }
+
+    private IMemberService CreateMemberService()
+    {
+        var memberService = new Mock<IMemberService>();
+
+        memberService
+            .Setup(x => x.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((string memberId, string _, string _) => memberId != null && _members.TryGetValue(memberId, out var member) ? member : null);
+
+        return memberService.Object;
     }
 
     private UserManager<ApplicationUser> CreateUserManager()
