@@ -73,16 +73,33 @@ public class OrderStatisticsService : IOrderStatisticsService
     {
         ArgumentNullException.ThrowIfNull(criteria);
 
-        if (string.IsNullOrEmpty(criteria.CustomerId))
+        if (string.IsNullOrEmpty(criteria.CustomerId) && !IsOrganizationScope(criteria))
         {
-            throw new ArgumentException("CustomerId is required: order statistics are scoped to one customer and cached per customer.", nameof(criteria));
+            throw new ArgumentException("CustomerId or OrganizationIds is required: order statistics are scoped to one customer or to organizations, and cached that way.", nameof(criteria));
         }
+    }
+
+    protected static bool IsOrganizationScope(OrderStatisticsCriteria criteria)
+    {
+        return string.IsNullOrEmpty(criteria.CustomerId) && criteria.OrganizationIds?.Count > 0;
     }
 
     protected virtual IChangeToken CreateChangeToken(OrderStatisticsCriteria criteria)
     {
-        // Orders' CustomerOrderService.ClearCache expires this token on every save or delete of the customer's orders.
-        return GenericCachingRegion<CustomerOrder>.CreateChangeTokenForKey(criteria.CustomerId);
+        // Orders' CustomerOrderService.ClearCache expires these on every save or delete of an order: the order customer's
+        // own key, and the search region for any order at all.
+        if (!IsOrganizationScope(criteria))
+        {
+            return GenericCachingRegion<CustomerOrder>.CreateChangeTokenForKey(criteria.CustomerId);
+        }
+
+        // One member: their accounts' keys, exactly. A whole organization has no key of its own, so any order expires it.
+        if (criteria.CustomerIds?.Count > 0)
+        {
+            return new CompositeChangeToken(criteria.CustomerIds.Select(GenericCachingRegion<CustomerOrder>.CreateChangeTokenForKey).ToList());
+        }
+
+        return GenericSearchCachingRegion<CustomerOrder>.CreateChangeToken();
     }
 
     protected virtual async Task<OrderStatistics> LoadAsync(OrderStatisticsCriteria criteria)
@@ -113,7 +130,17 @@ public class OrderStatisticsService : IOrderStatisticsService
 
     protected virtual IQueryable<CustomerOrderEntity> BuildQuery(IOrderRepository repository, OrderStatisticsCriteria criteria)
     {
-        var query = repository.CustomerOrders.Where(x => !x.IsPrototype && !x.IsCancelled && x.CustomerId == criteria.CustomerId);
+        var query = repository.CustomerOrders.Where(x => !x.IsPrototype && !x.IsCancelled);
+
+        if (!string.IsNullOrEmpty(criteria.CustomerId))
+        {
+            query = query.Where(x => x.CustomerId == criteria.CustomerId);
+        }
+
+        if (criteria.CustomerIds != null)
+        {
+            query = query.Where(x => criteria.CustomerIds.Contains(x.CustomerId));
+        }
 
         if (criteria.OrganizationIds != null)
         {

@@ -12,7 +12,7 @@ This module introduces a unified **GraphQL query** that consolidates several com
 - **Single GraphQL endpoint** providing combined contextual data  
 - Fetches aggregated information required to render a page efficiently  
 - Extends Virto Commerce GraphQL schema with `pageContext` query  
-- Extends Virto Commerce GraphQL schema with `orderStatistics` query: figures over the signed-in user's own orders
+- Extends Virto Commerce GraphQL schema with `orderStatistics` query: figures over the signed-in user's own orders, or over the current organization's orders for a user allowed to see them
 - Extends Virto Commerce GraphQL schema with `layout` query and `saveLayout` mutation: the signed-in user's dashboard layouts
 - Returns a combined object consisting of:
   - **SlugInfoType**
@@ -77,13 +77,15 @@ Returns details about the current user
 
 ## Order Statistics
 
-The `orderStatistics` query returns figures over the signed-in user's own orders: orders whose customer is the current user, in the organization of the user's token when there is one. Anonymous users and locked or expired accounts are refused. The query has no user, customer or organization argument.
+The `orderStatistics` query returns figures over the signed-in user's own orders: orders whose customer is the current user, in the organization of the user's token when there is one. Anonymous users and locked or expired accounts are refused. The query has no user, customer or organization argument: the organization is always the token's.
 
 Arguments:
 
 - `storeId`: counts the orders of one store only (all stores when omitted).
 - `currencyCode`: currency every amount is converted to. Defaults to the store's default currency, then to the platform's primary currency. An unknown currency code returns an error.
 - `cultureName`: culture of the formatted money amounts.
+- `organizationScope`: `true` counts every order of the token's organization, whoever placed it (other members, people who have left, orders placed on a member's behalf), instead of the user's own. It needs the `xapi:my_organization:order:view` permission (the Organization maintainer role has it by default; the platform Administrator role holds every permission) and a current organization; otherwise the query is refused.
+- `memberId`: with `organizationScope`, counts only the orders of one member of the token's organization, by contact id: the orders of all of the member's accounts. A contact outside the organization is refused exactly like an unknown one. Without `organizationScope` the argument is an error.
 
 Fields:
 
@@ -119,7 +121,7 @@ Each distinct range is aggregated once per request, even when several fields use
 
 ### Caching
 
-Results are cached per customer for `XFrontend.Statistics.Order.CacheExpirationMinutes` minutes (default 5); `0` turns the cache off. The effective lifetime is the lower of this setting and the platform's `Caching:CacheAbsoluteExpiration`. Saving or deleting one of the customer's orders through the Orders module refreshes that customer's figures on the instance that handled the save, through the platform's per-customer order cache token; other instances of a cluster are refreshed only with the Redis cache backplane. Everything else waits for the expiration, including currency and exchange-rate edits, writes that bypass the Orders module services, and the previous customer of an order moved to another customer.
+Results are cached per customer, per organization or per organization member for `XFrontend.Statistics.Order.CacheExpirationMinutes` minutes (default 5); `0` turns the cache off. The effective lifetime is the lower of this setting and the platform's `Caching:CacheAbsoluteExpiration`. Saving or deleting one of the customer's orders through the Orders module refreshes that customer's figures on the instance that handled the save, through the platform's per-customer order cache token; a member's figures follow the tokens of the member's accounts, and an organization's figures, having no token of their own, are refreshed by any saved or deleted order; other instances of a cluster are refreshed only with the Redis cache backplane. Everything else waits for the expiration, including currency and exchange-rate edits, writes that bypass the Orders module services, and the previous customer of an order moved to another customer.
 
 ## Dashboard Layouts
 
