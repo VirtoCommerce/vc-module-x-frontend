@@ -33,6 +33,10 @@
     "XFrontend.BrandProfile.FoundingDate": {
       "title": "Date de création",
       "description": "Date de création de l'entreprise au format ISO 8601. Exemple : '1998-04-01'"
+    },
+    "XFrontend.Statistics.Order.CacheExpirationMinutes": {
+      "title": "Durée du cache des statistiques de commandes (minutes)",
+      "description": "Durée, en minutes, pendant laquelle les statistiques de commandes des tableaux de bord de la boutique sont mises en cache ; 0 désactive le cache, et la valeur Caching:CacheAbsoluteExpiration de la plateforme s'applique si elle est inférieure. L'enregistrement ou la suppression d'une commande d'un client via le module Orders actualise ses chiffres sur l'instance qui a traité la modification (sur toutes les instances uniquement avec le backplane de cache Redis), tandis que les autres modifications, y compris celles des devises et des taux de change, attendent l'expiration"
     }
   }
 }

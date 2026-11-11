@@ -33,6 +33,10 @@
     "XFrontend.BrandProfile.FoundingDate": {
       "title": "Founding date",
       "description": "Date the company was founded, in ISO 8601 format. Example: '1998-04-01'"
+    },
+    "XFrontend.Statistics.Order.CacheExpirationMinutes": {
+      "title": "Order statistics cache duration (minutes)",
+      "description": "How long order statistics on storefront dashboards are cached, in minutes; 0 disables caching, and the platform's Caching:CacheAbsoluteExpiration applies when it is lower. Saving or deleting one of a customer's orders through the Orders module refreshes that customer's figures on the instance that handled the save (on all instances only with the Redis cache backplane), while other changes, including currency and exchange-rate edits, wait for the expiration"
     }
   }
 }

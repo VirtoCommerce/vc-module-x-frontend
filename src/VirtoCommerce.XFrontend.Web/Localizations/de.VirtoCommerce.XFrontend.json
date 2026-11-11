@@ -33,6 +33,10 @@
     "XFrontend.BrandProfile.FoundingDate": {
       "title": "Gründungsdatum",
       "description": "Datum der Unternehmensgründung im ISO-8601-Format. Beispiel: '1998-04-01'"
+    },
+    "XFrontend.Statistics.Order.CacheExpirationMinutes": {
+      "title": "Cache-Dauer der Bestellstatistiken (Minuten)",
+      "description": "Wie lange die Bestellstatistiken in den Shop-Dashboards zwischengespeichert werden, in Minuten; 0 deaktiviert das Caching, und ein niedrigerer Wert von Caching:CacheAbsoluteExpiration der Plattform hat Vorrang. Das Speichern oder Löschen einer Bestellung eines Kunden über das Orders-Modul aktualisiert dessen Zahlen auf der Instanz, die die Änderung verarbeitet hat (auf allen Instanzen nur mit dem Redis-Cache-Backplane), während andere Änderungen, auch an Währungen und Wechselkursen, erst nach Ablauf sichtbar werden"
     }
   }
 }
