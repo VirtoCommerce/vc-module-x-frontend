@@ -1,6 +1,7 @@
 using System.Linq;
 using FluentAssertions;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using VirtoCommerce.Platform.Core.Settings;
 using VirtoCommerce.Xapi.Core.Infrastructure;
@@ -12,6 +13,7 @@ using VirtoCommerce.XFrontend.Data.Layouts.Commands;
 using VirtoCommerce.XFrontend.Data.Layouts.Queries;
 using VirtoCommerce.XFrontend.Data.Layouts.Services;
 using VirtoCommerce.XFrontend.Data.Layouts.Validation;
+using VirtoCommerce.XFrontend.Data.Statistics.Authorization;
 using VirtoCommerce.XFrontend.Data.Statistics.Queries;
 using VirtoCommerce.XFrontend.Data.Statistics.Services;
 using VirtoCommerce.XFrontend.Web;
@@ -32,6 +34,7 @@ public class ModuleRegistrationTests
 
         services.Should().ContainSingle(x => x.ServiceType == typeof(IOrderStatisticsService) && x.ImplementationType == typeof(OrderStatisticsService));
         services.Should().ContainSingle(x => x.ServiceType == typeof(IStatisticsCurrencyResolver) && x.ImplementationType == typeof(StatisticsCurrencyResolver));
+        services.Should().ContainSingle(x => x.ServiceType == typeof(IAuthorizationHandler) && x.ImplementationType == typeof(OrganizationOrderStatisticsAuthorizationHandler));
         services.Should().ContainSingle(x => x.ServiceType == typeof(ILayoutService) && x.ImplementationType == typeof(LayoutService));
         services.Should().ContainSingle(x => x.ServiceType == typeof(AbstractValidator<SaveLayoutCommand>) && x.ImplementationType == typeof(SaveLayoutCommandValidator));
     }

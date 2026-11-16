@@ -19,6 +19,7 @@ namespace VirtoCommerce.XFrontend.Tests.Statistics;
 public sealed class OrderStatisticsGraphQlTests : IDisposable
 {
     private const string User = "user-1";
+    private const string UserContact = "user-contact-1";
 
     private const string OrganizationOrderView = "xapi:my_organization:order:view";
 
@@ -33,7 +34,8 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
 
     public OrderStatisticsGraphQlTests()
     {
-        _context.AddUser(User);
+        _context.AddUser(User, memberId: UserContact);
+        _context.AddContact(UserContact, ["org-1"], User);
     }
 
     public void Dispose()
@@ -203,7 +205,31 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     {
         var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), User, organizationId: "org-1");
 
-        GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Message.Should().Contain(OrganizationOrderView);
+        GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Code.Should().Be(Constants.ForbiddenCode);
+        _context.Statistics.Calls.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task OrganizationScope_AfterLeavingTheOrganization_IsDenied()
+    {
+        // The token still names the organization and carries its permission; only the member's current organizations refuse it.
+        _context.AddUser("former-user", memberId: "former-contact");
+        _context.AddContact("former-contact", ["org-2"], "former-user");
+
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), "former-user", organizationId: "org-1", OrganizationOrderView);
+
+        GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Code.Should().Be(Constants.ForbiddenCode);
+        _context.Statistics.Calls.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task OrganizationScope_WithALockedMembership_IsDenied()
+    {
+        _context.LockMembership(User, "org-1");
+
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), User, organizationId: "org-1", OrganizationOrderView);
+
+        GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Code.Should().Be(Constants.ForbiddenCode);
         _context.Statistics.Calls.Should().BeEmpty();
     }
 
@@ -257,6 +283,21 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
         criteria.CustomerIds.Should().Equal("account-a", "account-b");
     }
 
+    [Fact]
+    public async Task Member_WhoIsAnEmployee_NarrowsToTheirAccounts()
+    {
+        _context.AddEmployee("employee-1", ["org-1"], "account-e");
+
+        var json = await _context.ExecuteAsync(
+            Query("storeId: \"B2B-store\", organizationScope: true, memberId: \"employee-1\""),
+            User,
+            organizationId: "org-1",
+            OrganizationOrderView);
+
+        GraphQlTestContext.Data(json, "orderStatistics");
+        _context.Statistics.Calls.Should().ContainSingle().Which.CustomerIds.Should().Equal("account-e");
+    }
+
     [Theory]
     [InlineData("contact-of-org-2")] // a contact of another organization
     [InlineData("no-such-contact")]
@@ -275,13 +316,15 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     }
 
     [Fact]
-    public async Task Member_WithoutOrganizationScope_IsAnExecutionError()
+    public async Task Member_WithoutOrganizationScope_IsAValidationError()
     {
         _context.AddContact("contact-1", ["org-1"], "account-a");
 
         var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", memberId: \"contact-1\""), User, organizationId: "org-1", OrganizationOrderView);
 
-        GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Message.Should().Contain("organizationScope");
+        var error = GraphQlTestContext.Errors(json).Should().ContainSingle().Subject;
+        error.Message.Should().Contain("organizationScope");
+        error.Code.Should().Be(Constants.ValidationErrorCode);
         _context.Statistics.Calls.Should().BeEmpty();
     }
 

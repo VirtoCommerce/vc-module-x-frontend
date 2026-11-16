@@ -9,6 +9,7 @@ using FluentValidation;
 using GraphQL;
 using GraphQL.Introspection;
 using GraphQL.Types;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -33,6 +34,7 @@ using VirtoCommerce.XFrontend.Data.Commands;
 using VirtoCommerce.XFrontend.Data.Layouts.Services;
 using VirtoCommerce.XFrontend.Data.Layouts.Validation;
 using VirtoCommerce.XFrontend.Data.Queries;
+using VirtoCommerce.XFrontend.Data.Statistics.Authorization;
 using VirtoCommerce.XFrontend.Data.Statistics.Services;
 using Xunit;
 using CustomerModuleConstants = VirtoCommerce.CustomerModule.Core.ModuleConstants;
@@ -56,6 +58,7 @@ public sealed class GraphQlTestContext : IDisposable
     private readonly Dictionary<string, ApplicationUser> _users = [];
     private readonly HashSet<string> _lockedUserIds = [];
     private readonly Dictionary<string, Member> _members = [];
+    private readonly HashSet<(string UserId, string OrganizationId)> _lockedMemberships = [];
 
     public GraphQlTestContext()
     {
@@ -82,6 +85,8 @@ public sealed class GraphQlTestContext : IDisposable
         services.AddTransient<AbstractValidator<SaveLayoutCommand>, SaveLayoutCommandValidator>();
         services.AddSingleton<IUserManagerCore>(new UserManagerCore(CreateUserManager, requestScopedCacheAccessor: null));
         services.AddSingleton(CreateMemberService());
+        services.AddSingleton(CreateOrganizationMembershipSearchService());
+        services.AddSingleton<IAuthorizationHandler, OrganizationOrderStatisticsAuthorizationHandler>();
 
         services.AddGraphQL(builder =>
         {
@@ -119,9 +124,9 @@ public sealed class GraphQlTestContext : IDisposable
 
     /// <summary>
     /// Creates an account for the account-state check: usable by default, or locked, or with an expired password.
-    /// An administrator's token also carries the platform Administrator role.
+    /// An administrator's token also carries the platform Administrator role, and an account of a member its member id.
     /// </summary>
-    public void AddUser(string userId, bool locked = false, bool passwordExpired = false, bool isAdministrator = false)
+    public void AddUser(string userId, bool locked = false, bool passwordExpired = false, bool isAdministrator = false, string memberId = null)
     {
         _users[userId] = new ApplicationUser
         {
@@ -129,6 +134,7 @@ public sealed class GraphQlTestContext : IDisposable
             UserName = userId,
             PasswordExpired = passwordExpired,
             IsAdministrator = isAdministrator,
+            MemberId = memberId,
         };
 
         if (locked)
@@ -145,6 +151,21 @@ public sealed class GraphQlTestContext : IDisposable
             Organizations = [.. organizationIds],
             SecurityAccounts = accountIds.Select(x => new ApplicationUser { Id = x, UserName = x }).ToList(),
         };
+    }
+
+    public void AddEmployee(string employeeId, IList<string> organizationIds, params string[] accountIds)
+    {
+        _members[employeeId] = new Employee
+        {
+            Id = employeeId,
+            Organizations = [.. organizationIds],
+            SecurityAccounts = accountIds.Select(x => new ApplicationUser { Id = x, UserName = x }).ToList(),
+        };
+    }
+
+    public void LockMembership(string userId, string organizationId)
+    {
+        _lockedMemberships.Add((userId, organizationId));
     }
 
     public Task<string> ExecuteAsync(string query, string userId, string organizationId = null, params string[] permissions)
@@ -165,6 +186,11 @@ public sealed class GraphQlTestContext : IDisposable
         if (_users.TryGetValue(userId, out var user) && user.IsAdministrator)
         {
             identity.AddClaim(new Claim(identity.RoleClaimType, PlatformConstants.Security.SystemRoles.Administrator));
+        }
+
+        if (!string.IsNullOrEmpty(user?.MemberId))
+        {
+            identity.AddClaim(new Claim(PlatformConstants.Security.Claims.MemberIdClaimType, user.MemberId));
         }
 
         return ExecuteAsync(query, new ClaimsPrincipal(identity));
@@ -231,6 +257,29 @@ public sealed class GraphQlTestContext : IDisposable
             .ReturnsAsync((string memberId, string _, string _) => memberId != null && _members.TryGetValue(memberId, out var member) ? member : null);
 
         return memberService.Object;
+    }
+
+    private IOrganizationMembershipSearchService CreateOrganizationMembershipSearchService()
+    {
+        var membershipSearchService = new Mock<IOrganizationMembershipSearchService>();
+
+        // Any membership asked for exists, unlocked unless a test locks it.
+        membershipSearchService
+            .Setup(x => x.SearchAsync(It.IsAny<OrganizationMembershipSearchCriteria>(), It.IsAny<bool>()))
+            .ReturnsAsync((OrganizationMembershipSearchCriteria criteria, bool _) => new OrganizationMembershipSearchResult
+            {
+                Results =
+                [
+                    new OrganizationMembership
+                    {
+                        UserId = criteria.UserId,
+                        OrganizationId = criteria.OrganizationId,
+                        IsLocked = _lockedMemberships.Contains((criteria.UserId, criteria.OrganizationId)),
+                    },
+                ],
+            });
+
+        return membershipSearchService.Object;
     }
 
     private UserManager<ApplicationUser> CreateUserManager()

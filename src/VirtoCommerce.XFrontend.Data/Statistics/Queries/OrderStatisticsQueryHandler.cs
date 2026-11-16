@@ -7,6 +7,7 @@ using GraphQL;
 using VirtoCommerce.CustomerModule.Core.Model;
 using VirtoCommerce.CustomerModule.Core.Services;
 using VirtoCommerce.Platform.Core.Common;
+using VirtoCommerce.Platform.Core.Security;
 using VirtoCommerce.Xapi.Core.Infrastructure;
 using VirtoCommerce.Xapi.Core.Security.Authorization;
 using VirtoCommerce.XFrontend.Core.Statistics.Models;
@@ -52,15 +53,15 @@ public class OrderStatisticsQueryHandler : IQueryHandler<OrderStatisticsQuery, O
 
     protected virtual async Task<IList<string>> GetMemberAccountIdsAsync(string memberId, string organizationId)
     {
-        var contact = await _memberService.GetByIdAsync(memberId, MemberResponseGroup.WithSecurityAccounts.ToString()) as Contact;
+        var member = await _memberService.GetByIdAsync(memberId, MemberResponseGroup.WithSecurityAccounts.ToString());
 
-        // Same error as for an unknown id, so it reveals nothing about other organizations' contacts.
-        if (contact?.Organizations?.Contains(organizationId, StringComparer.OrdinalIgnoreCase) != true)
+        // Same error as for an unknown id, so it reveals nothing about other organizations' members.
+        if ((member as IHasOrganizations)?.Organizations?.Contains(organizationId, StringComparer.OrdinalIgnoreCase) != true)
         {
             throw AuthorizationError.Forbidden("The member does not belong to the current organization.");
         }
 
-        return (contact.SecurityAccounts ?? [])
+        return ((member as IHasSecurityAccounts)?.SecurityAccounts ?? [])
             .Select(x => x.Id)
             .Where(x => !string.IsNullOrEmpty(x))
             .Distinct()

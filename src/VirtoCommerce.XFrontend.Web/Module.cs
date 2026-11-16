@@ -1,5 +1,6 @@
 using FluentValidation;
 using GraphQL.MicrosoftDI;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ using VirtoCommerce.XFrontend.Core.Statistics.Services;
 using VirtoCommerce.XFrontend.Data;
 using VirtoCommerce.XFrontend.Data.Layouts.Services;
 using VirtoCommerce.XFrontend.Data.Layouts.Validation;
+using VirtoCommerce.XFrontend.Data.Statistics.Authorization;
 using VirtoCommerce.XFrontend.Data.Statistics.Services;
 
 namespace VirtoCommerce.XFrontend.Web;
@@ -27,6 +29,7 @@ public class Module : IModule, IHasConfiguration
     {
         serviceCollection.AddTransient<IOrderStatisticsService, OrderStatisticsService>();
         serviceCollection.AddTransient<IStatisticsCurrencyResolver, StatisticsCurrencyResolver>();
+        serviceCollection.AddSingleton<IAuthorizationHandler, OrganizationOrderStatisticsAuthorizationHandler>();
         serviceCollection.AddTransient<ILayoutService, LayoutService>();
         serviceCollection.AddTransient<AbstractValidator<SaveLayoutCommand>, SaveLayoutCommandValidator>();
 
