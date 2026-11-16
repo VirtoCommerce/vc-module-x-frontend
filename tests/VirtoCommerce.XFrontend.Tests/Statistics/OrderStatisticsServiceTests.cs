@@ -257,8 +257,6 @@ public sealed class OrderStatisticsServiceTests : IDisposable
     [Fact]
     public async Task GetAsync_OrganizationScope_CountsEveryCustomersOrdersOfTheOrganization()
     {
-        // VCST-6654: every non-cancelled order of the organization, whoever placed it; other organizations' orders,
-        // even by the same customers, stay out.
         _database.SeedOrder(Customer, 100m, _feb2026, organizationId: "org-1");
         _database.SeedOrder(OtherCustomer, 200m, _feb2026, organizationId: "org-1");
         _database.SeedOrder("former-member", 400m, _feb2026, organizationId: "org-1");
@@ -291,7 +289,6 @@ public sealed class OrderStatisticsServiceTests : IDisposable
     [Fact]
     public async Task GetAsync_MemberWithoutAccounts_MatchesNothing()
     {
-        // A member who has no account has placed no order: an empty list must never widen to the whole organization.
         _database.SeedOrder(Customer, 100m, _feb2026, organizationId: "org-1");
 
         var criteria = OrganizationCriteria("org-1");

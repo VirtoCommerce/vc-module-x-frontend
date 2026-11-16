@@ -86,19 +86,18 @@ public class OrderStatisticsService : IOrderStatisticsService
 
     protected virtual IChangeToken CreateChangeToken(OrderStatisticsCriteria criteria)
     {
-        // Orders' CustomerOrderService.ClearCache expires these on every save or delete of an order: the order customer's
-        // own key, and the search region for any order at all.
+        // Orders' CustomerOrderService.ClearCache expires the customer's key and the search region on every order change.
         if (!IsOrganizationScope(criteria))
         {
             return GenericCachingRegion<CustomerOrder>.CreateChangeTokenForKey(criteria.CustomerId);
         }
 
-        // One member: their accounts' keys, exactly. A whole organization has no key of its own, so any order expires it.
         if (criteria.CustomerIds?.Count > 0)
         {
             return new CompositeChangeToken(criteria.CustomerIds.Select(GenericCachingRegion<CustomerOrder>.CreateChangeTokenForKey).ToList());
         }
 
+        // Orders has no per-organization key, so any order expires an organization's entry.
         return GenericSearchCachingRegion<CustomerOrder>.CreateChangeToken();
     }
 

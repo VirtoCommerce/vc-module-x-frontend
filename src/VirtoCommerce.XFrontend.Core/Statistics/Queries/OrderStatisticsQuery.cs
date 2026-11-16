@@ -19,10 +19,8 @@ public class OrderStatisticsQuery : Query<OrderStatisticsContext>
 
     public string CultureName { get; set; }
 
-    /// <summary>Every order of the current organization instead of the caller's own (needs the organization order permission).</summary>
     public bool OrganizationScope { get; set; }
 
-    /// <summary>With <see cref="OrganizationScope"/>: one member's orders, by contact id.</summary>
     public string MemberId { get; set; }
 
     public override IEnumerable<QueryArgument> GetArguments()

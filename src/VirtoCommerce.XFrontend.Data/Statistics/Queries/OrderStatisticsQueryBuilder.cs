@@ -37,12 +37,7 @@ public class OrderStatisticsQueryBuilder : QueryBuilder<OrderStatisticsQuery, Or
         context.SetCurrencies(currencies, request.CultureName);
     }
 
-    /// <summary>
-    /// An organization's orders are someone else's orders: only a member allowed to see all of the organization's
-    /// orders may count them, and only for the organization the token was issued for. The token carries that
-    /// organization's roles, so its permission claims decide. Whether <c>memberId</c> belongs to it is checked by the
-    /// handler, which loads the member.
-    /// </summary>
+    // The token carries the current organization's roles, so its permission claims decide.
     protected virtual void CheckScope(IResolveFieldContext<object> context, OrderStatisticsQuery request)
     {
         if (!request.OrganizationScope)

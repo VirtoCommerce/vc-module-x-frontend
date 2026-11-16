@@ -177,8 +177,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     [Fact]
     public void Schema_NamesNoUser_OnlyAnAuthorizedOrganizationScope()
     {
-        // Whose own orders are counted is decided by the token only; an argument naming a user would be a way around it.
-        // The organization scope and its member are the only other scopes, and both are authorized on the server.
+        // An argument naming a user would bypass the token's scope.
         _context.Schema.Initialize();
 
         var field = _context.Schema.Query.GetField("orderStatistics");
@@ -211,7 +210,6 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     [Fact]
     public async Task OrganizationScope_IsOpenToAPlatformAdministrator()
     {
-        // The platform's own rule for a permission: the Administrator role holds every one.
         _context.AddUser("admin-user", isAdministrator: true);
 
         var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), "admin-user", organizationId: "org-9");
@@ -223,7 +221,6 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     [Fact]
     public async Task OrganizationScope_WithoutACurrentOrganization_IsDenied()
     {
-        // A permission claim without an organization claim names no organization to count.
         var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), User, organizationId: null, OrganizationOrderView);
 
         GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Code.Should().Be(Constants.ForbiddenCode);
@@ -233,7 +230,6 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     [Fact]
     public async Task OrganizationScopeOff_KeepsTheOwnScope()
     {
-        // An explicit `false` is the default: the caller's own orders, with or without the permission.
         var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: false"), User, organizationId: "org-1", OrganizationOrderView);
 
         GraphQlTestContext.Data(json, "orderStatistics");
@@ -258,7 +254,6 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
         var criteria = _context.Statistics.Calls.Should().ContainSingle().Subject;
         criteria.CustomerId.Should().BeNull();
         criteria.OrganizationIds.Should().Equal("org-1");
-        // Sorted: one member is one cache key whatever order the accounts come in.
         criteria.CustomerIds.Should().Equal("account-a", "account-b");
     }
 

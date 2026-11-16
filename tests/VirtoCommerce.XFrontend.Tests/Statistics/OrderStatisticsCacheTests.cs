@@ -213,7 +213,6 @@ public sealed class OrderStatisticsCacheTests : IDisposable
     [InlineData("")]
     public async Task CriteriaWithoutCustomerOrOrganization_IsRefused(string customerId)
     {
-        // The entries are invalidated per customer or per organization: a criteria naming neither has no token to expire.
         using var cache = new RecordingPlatformMemoryCache();
         var service = CreateService(cache, minutes: 5);
 
@@ -226,8 +225,6 @@ public sealed class OrderStatisticsCacheTests : IDisposable
     [Fact]
     public async Task OrganizationEntry_ExpiresWhenAnyOrderChanges()
     {
-        // VCST-6654: an organization has no key of its own, so the search region (expired for every saved order) is its
-        // token. Another member's new order must show.
         using var cache = new RecordingPlatformMemoryCache();
         var service = CreateService(cache, minutes: 5);
         var organization = Guid.NewGuid().ToString("N");
@@ -253,7 +250,6 @@ public sealed class OrderStatisticsCacheTests : IDisposable
 
         (await service.GetAsync(MemberCriteria(organization, _customer))).Total.Should().Be(100m);
 
-        // Another member's order expires the search region, not the member's own key.
         ClearOrderCache(otherOrderId, _otherCustomer);
         await service.GetAsync(MemberCriteria(organization, _customer));
         service.Loads.Should().Be(1);
@@ -268,7 +264,6 @@ public sealed class OrderStatisticsCacheTests : IDisposable
     [Fact]
     public async Task OwnOrganizationAndMemberFigures_NeverShareAnEntry()
     {
-        // The same orders seen three ways: the key must carry the scope, or one would be served the other's figures.
         using var cache = new RecordingPlatformMemoryCache();
         var service = CreateService(cache, minutes: 5);
         var organization = Guid.NewGuid().ToString("N");

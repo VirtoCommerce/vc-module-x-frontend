@@ -31,7 +31,6 @@ public class OrderStatisticsQueryHandler : IQueryHandler<OrderStatisticsQuery, O
         var result = AbstractTypeFactory<OrderStatisticsContext>.TryCreateInstance();
         if (request.OrganizationScope)
         {
-            // The query builder has checked the permission and that there is a current organization.
             result.OrganizationIds = [request.OrganizationId];
             result.CustomerIds = string.IsNullOrEmpty(request.MemberId)
                 ? null
@@ -51,15 +50,11 @@ public class OrderStatisticsQueryHandler : IQueryHandler<OrderStatisticsQuery, O
         return result;
     }
 
-    /// <summary>
-    /// The accounts whose orders are the member's, sorted so that one member is always one cache key. A member
-    /// outside the organization is refused exactly like one that does not exist, so the answer tells nothing about
-    /// other organizations' contacts.
-    /// </summary>
     protected virtual async Task<IList<string>> GetMemberAccountIdsAsync(string memberId, string organizationId)
     {
         var contact = await _memberService.GetByIdAsync(memberId, MemberResponseGroup.WithSecurityAccounts.ToString()) as Contact;
 
+        // Same error as for an unknown id, so it reveals nothing about other organizations' contacts.
         if (contact?.Organizations?.Contains(organizationId, StringComparer.OrdinalIgnoreCase) != true)
         {
             throw AuthorizationError.Forbidden("The member does not belong to the current organization.");
@@ -69,6 +64,7 @@ public class OrderStatisticsQueryHandler : IQueryHandler<OrderStatisticsQuery, O
             .Select(x => x.Id)
             .Where(x => !string.IsNullOrEmpty(x))
             .Distinct()
+            // One member, one cache key, whatever order the accounts come in.
             .Order(StringComparer.Ordinal)
             .ToList();
     }

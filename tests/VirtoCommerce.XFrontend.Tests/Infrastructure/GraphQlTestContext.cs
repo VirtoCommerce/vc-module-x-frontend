@@ -137,7 +137,6 @@ public sealed class GraphQlTestContext : IDisposable
         }
     }
 
-    /// <summary>A contact of the given organizations with the given security accounts, for the member scope.</summary>
     public void AddContact(string contactId, IList<string> organizationIds, params string[] accountIds)
     {
         _members[contactId] = new Contact
@@ -148,10 +147,6 @@ public sealed class GraphQlTestContext : IDisposable
         };
     }
 
-    /// <summary>
-    /// Executes as a signed-in user; <paramref name="organizationId"/> becomes the token's organization claim and each of
-    /// <paramref name="permissions"/> a permission claim, as the platform issues them for that organization's roles.
-    /// </summary>
     public Task<string> ExecuteAsync(string query, string userId, string organizationId = null, params string[] permissions)
     {
         var identity = new ClaimsIdentity(authenticationType: "Test");
