@@ -18,6 +18,7 @@ using VirtoCommerce.CustomerModule.Core.Model;
 using VirtoCommerce.CustomerModule.Core.Services;
 using VirtoCommerce.Platform.Core;
 using VirtoCommerce.Platform.Core.Security;
+using VirtoCommerce.Platform.Core.Security.SignInLog;
 using VirtoCommerce.StoreModule.Core.Model;
 using VirtoCommerce.StoreModule.Core.Services;
 using VirtoCommerce.Xapi.Core.Extensions;
@@ -172,6 +173,10 @@ public sealed class GraphQlTestContext : IDisposable
     {
         var identity = new ClaimsIdentity(authenticationType: "Test");
         identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userId));
+        // Model a password sign-in, as the platform's token endpoint does. Since platform 3.1097.0 the
+        // expired-password check in IUserManagerCore.CheckCurrentUserState only applies to tokens whose
+        // authentication method is Password; a principal without the claim counts as an external sign-in.
+        identity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, SignInType.Password));
 
         if (organizationId != null)
         {

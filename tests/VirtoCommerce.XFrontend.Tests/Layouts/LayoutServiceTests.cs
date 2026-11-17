@@ -3,6 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Newtonsoft.Json;
 using VirtoCommerce.XFrontend.Core.Layouts.Models;
 using VirtoCommerce.XFrontend.Data.Layouts.Services;
 using VirtoCommerce.XFrontend.Tests.Infrastructure;
@@ -17,11 +20,12 @@ public class LayoutServiceTests
     private const string User = "user-1";
 
     private readonly InMemoryCustomerPreferenceService _preferences = new();
+    private readonly Mock<ILogger<LayoutService>> _logger = new();
     private readonly LayoutService _service;
 
     public LayoutServiceTests()
     {
-        _service = new LayoutService(_preferences, _preferences);
+        _service = new LayoutService(_preferences, _preferences, _logger.Object);
     }
 
     [Theory]
@@ -48,6 +52,24 @@ public class LayoutServiceTests
     public async Task Get_NeverSaved_ReturnsNull()
     {
         (await _service.GetLayoutAsync(User, "accountDashboard", "B2B-store")).Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("{ not json")]
+    [InlineData("[1, 2]")]
+    public async Task Get_UnreadableStoredValue_ReadsAsNone_AndTheNextSaveReplacesIt(string stored)
+    {
+        // Written by the customer preferences API: it stores any value under the layout's name.
+        _preferences.Values[(User, "Layout.accountDashboard.B2B-store")] = stored;
+
+        (await _service.GetLayoutAsync(User, "accountDashboard", "B2B-store")).Should().BeNull();
+        _logger.Verify(
+            x => x.Log(LogLevel.Warning, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<JsonException>(), It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            Times.Once);
+
+        await _service.SaveLayoutAsync(User, "accountDashboard", NewLayout(), "B2B-store");
+
+        (await _service.GetLayoutAsync(User, "accountDashboard", "B2B-store")).Should().NotBeNull();
     }
 
     [Fact]
