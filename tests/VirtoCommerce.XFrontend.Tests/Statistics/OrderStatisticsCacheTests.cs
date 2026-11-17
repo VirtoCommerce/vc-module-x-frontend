@@ -18,9 +18,10 @@ using Xunit;
 namespace VirtoCommerce.XFrontend.Tests.Statistics;
 
 /// <summary>
-/// The statistics cache: entries are keyed by the full criteria, carry the platform's per-customer order token (the
-/// one Orders' <c>CustomerOrderService.ClearCache</c> expires on every save and delete) and live for the configured
-/// minutes. Loads are counted through the <c>BuildQuery</c> seam, which runs once per database aggregation.
+/// The statistics cache: entries are keyed by the full criteria, carry the order tokens Orders'
+/// <c>CustomerOrderService.ClearCache</c> expires on every save and delete (the customer's, or the search region's for a
+/// whole organization) and live for the configured minutes. Loads are counted through the <c>BuildQuery</c> seam, which
+/// runs once per database aggregation.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class OrderStatisticsCacheTests : IDisposable
@@ -231,6 +232,8 @@ public sealed class OrderStatisticsCacheTests : IDisposable
         _database.SeedOrder(_customer, 100m, _feb2026, organizationId: organization);
 
         (await service.GetAsync(OrganizationCriteria(organization))).Total.Should().Be(100m);
+        await service.GetAsync(OrganizationCriteria(organization));
+        service.Loads.Should().Be(1);
 
         var orderId = _database.SeedOrder(_otherCustomer, 200m, _feb2026, organizationId: organization);
         ClearOrderCache(orderId, _otherCustomer);
@@ -259,6 +262,26 @@ public sealed class OrderStatisticsCacheTests : IDisposable
 
         (await service.GetAsync(MemberCriteria(organization, _customer))).Total.Should().Be(150m);
         service.Loads.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task OwnEntryInAnOrganization_IsNotEvictedByAnotherCustomersOrder()
+    {
+        using var cache = new RecordingPlatformMemoryCache();
+        var service = CreateService(cache, minutes: 5);
+        var organization = Guid.NewGuid().ToString("N");
+        _database.SeedOrder(_customer, 100m, _feb2026, organizationId: organization);
+        var otherOrderId = _database.SeedOrder(_otherCustomer, 200m, _feb2026, organizationId: organization);
+
+        var own = Criteria(_customer);
+        own.OrganizationIds = [organization];
+
+        await service.GetAsync(own);
+
+        ClearOrderCache(otherOrderId, _otherCustomer);
+
+        await service.GetAsync(own);
+        service.Loads.Should().Be(1);
     }
 
     [Fact]

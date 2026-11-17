@@ -63,6 +63,7 @@ public sealed class GraphQlTestContext : IDisposable
     private readonly Dictionary<string, Member> _members = [];
     private readonly HashSet<(string UserId, string OrganizationId)> _lockedMemberships = [];
     private readonly Dictionary<(string UserId, string OrganizationId), string> _membershipStatuses = [];
+    private readonly HashSet<(string UserId, string OrganizationId)> _removedMemberships = [];
 
     public GraphQlTestContext()
     {
@@ -129,7 +130,7 @@ public sealed class GraphQlTestContext : IDisposable
 
     /// <summary>
     /// Creates an account for the account-state check: usable by default, or locked, or with an expired password.
-    /// An administrator's token also carries the platform Administrator role, and an account of a member its member id.
+    /// An administrator's token also carries the platform Administrator role; a member's account carries the member id.
     /// </summary>
     public void AddUser(string userId, bool locked = false, bool passwordExpired = false, bool isAdministrator = false, string memberId = null)
     {
@@ -176,6 +177,16 @@ public sealed class GraphQlTestContext : IDisposable
     public void SetMembershipStatus(string userId, string organizationId, string status)
     {
         _membershipStatuses[(userId, organizationId)] = status;
+    }
+
+    public void RemoveMembership(string userId, string organizationId)
+    {
+        _removedMemberships.Add((userId, organizationId));
+    }
+
+    public void SetMemberStatus(string memberId, string status)
+    {
+        _members[memberId].Status = status;
     }
 
     public Task<string> ExecuteAsync(string query, string userId, string organizationId = null, params string[] permissions)
@@ -292,21 +303,23 @@ public sealed class GraphQlTestContext : IDisposable
     {
         var membershipSearchService = new Mock<IOrganizationMembershipSearchService>();
 
-        // Any membership asked for exists, active unless a test locks it or sets its status.
+        // Any membership asked for exists unless a test removes it, active unless a test locks it or sets its status.
         membershipSearchService
             .Setup(x => x.SearchAsync(It.IsAny<OrganizationMembershipSearchCriteria>(), It.IsAny<bool>()))
             .ReturnsAsync((OrganizationMembershipSearchCriteria criteria, bool _) => new OrganizationMembershipSearchResult
             {
-                Results =
-                [
-                    new OrganizationMembership
-                    {
-                        UserId = criteria.UserId,
-                        OrganizationId = criteria.OrganizationId,
-                        IsLocked = _lockedMemberships.Contains((criteria.UserId, criteria.OrganizationId)),
-                        Status = _membershipStatuses.GetValueOrDefault((criteria.UserId, criteria.OrganizationId)),
-                    },
-                ],
+                Results = _removedMemberships.Contains((criteria.UserId, criteria.OrganizationId))
+                    ? []
+                    :
+                    [
+                        new OrganizationMembership
+                        {
+                            UserId = criteria.UserId,
+                            OrganizationId = criteria.OrganizationId,
+                            IsLocked = _lockedMemberships.Contains((criteria.UserId, criteria.OrganizationId)),
+                            Status = _membershipStatuses.GetValueOrDefault((criteria.UserId, criteria.OrganizationId)),
+                        },
+                    ],
             });
 
         return membershipSearchService.Object;

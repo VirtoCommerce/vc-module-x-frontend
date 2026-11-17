@@ -11,9 +11,8 @@ using Xunit;
 namespace VirtoCommerce.XFrontend.Tests.Statistics;
 
 /// <summary>
-/// The <c>orderStatistics</c> query through the module's real schema, handler and currency resolver. The scope must
-/// come from the token alone (the buyer's own orders), and every refused caller must leave the statistics service
-/// untouched.
+/// The <c>orderStatistics</c> query through the module's real schema, handler and currency resolver. The organization
+/// must come from the token alone, and every refused caller must leave the statistics service untouched.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class OrderStatisticsGraphQlTests : IDisposable
@@ -102,7 +101,6 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     [Fact]
     public async Task Administrator_GetsTheirOwnFigures()
     {
-        // No store-wide or organization-wide branch for administrators: the scope is the caller's own orders, like anyone's.
         _context.AddUser("admin-user", isAdministrator: true);
 
         var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\""), "admin-user", organizationId: "org-9");
@@ -179,7 +177,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     [Fact]
     public void Schema_NamesNoUser_OnlyAnAuthorizedOrganizationScope()
     {
-        // An argument naming a user would bypass the token's scope.
+        // An unchecked argument naming a user or an organization would bypass the token's scope.
         _context.Schema.Initialize();
 
         var field = _context.Schema.Query.GetField("orderStatistics");
@@ -212,7 +210,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     [Fact]
     public async Task OrganizationScope_AfterLeavingTheOrganization_IsDenied()
     {
-        // The token still names the organization and carries its permission; only the member's current organizations refuse it.
+        // The token still names the organization and carries the permission.
         _context.AddUser("former-user", memberId: "former-contact");
         _context.AddContact("former-contact", ["org-2"], "former-user");
 
@@ -248,6 +246,42 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     }
 
     [Fact]
+    public async Task OrganizationScope_WithABlockingMemberStatus_IsDenied()
+    {
+        // Without a membership status, the member's own status decides.
+        _context.SetMemberStatus(UserContact, "Rejected");
+
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), User, organizationId: "org-1", OrganizationOrderView);
+
+        GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Code.Should().Be(Constants.ForbiddenCode);
+        _context.Statistics.Calls.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task OrganizationScope_WithoutAMembershipRecord_CountsTheCurrentOrganization()
+    {
+        // Customer treats a missing membership record as an approved membership.
+        _context.RemoveMembership(User, "org-1");
+
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), User, organizationId: "org-1", OrganizationOrderView);
+
+        GraphQlTestContext.Data(json, "orderStatistics");
+        _context.Statistics.Calls.Should().ContainSingle().Which.OrganizationIds.Should().Equal("org-1");
+    }
+
+    [Fact]
+    public async Task OrganizationScope_IsOpenToAnEmployeeOfTheOrganization()
+    {
+        _context.AddUser("employee-user", memberId: "employee-1");
+        _context.AddEmployee("employee-1", ["org-1"], "employee-user");
+
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), "employee-user", organizationId: "org-1", OrganizationOrderView);
+
+        GraphQlTestContext.Data(json, "orderStatistics");
+        _context.Statistics.Calls.Should().ContainSingle().Which.OrganizationIds.Should().Equal("org-1");
+    }
+
+    [Fact]
     public async Task OrganizationScope_IsOpenToAPlatformAdministrator()
     {
         _context.AddUser("admin-user", isAdministrator: true);
@@ -261,7 +295,10 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     [Fact]
     public async Task OrganizationScope_WithoutACurrentOrganization_IsDenied()
     {
-        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), User, organizationId: null, OrganizationOrderView);
+        // An administrator passes the authorization handler, so only the missing organization can refuse.
+        _context.AddUser("admin-user", isAdministrator: true);
+
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), "admin-user", organizationId: null);
 
         GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Code.Should().Be(Constants.ForbiddenCode);
         _context.Statistics.Calls.Should().BeEmpty();
@@ -313,7 +350,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     }
 
     [Theory]
-    [InlineData("contact-of-org-2")] // a contact of another organization
+    [InlineData("contact-of-org-2")]
     [InlineData("no-such-contact")]
     public async Task Member_OutsideTheOrganization_IsDeniedLikeAnUnknownOne(string memberId)
     {
@@ -325,7 +362,9 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
             organizationId: "org-1",
             OrganizationOrderView);
 
-        GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Code.Should().Be(Constants.ForbiddenCode);
+        var error = GraphQlTestContext.Errors(json).Should().ContainSingle().Subject;
+        error.Message.Should().Be("The member does not belong to the current organization.");
+        error.Code.Should().Be(Constants.ForbiddenCode);
         _context.Statistics.Calls.Should().BeEmpty();
     }
 
