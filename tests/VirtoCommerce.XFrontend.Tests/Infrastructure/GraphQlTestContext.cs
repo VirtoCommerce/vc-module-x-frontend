@@ -17,8 +17,10 @@ using VirtoCommerce.CoreModule.Core.Currency;
 using VirtoCommerce.CustomerModule.Core.Model;
 using VirtoCommerce.CustomerModule.Core.Services;
 using VirtoCommerce.Platform.Core;
+using VirtoCommerce.Platform.Core.Common;
 using VirtoCommerce.Platform.Core.Security;
 using VirtoCommerce.Platform.Core.Security.SignInLog;
+using VirtoCommerce.Platform.Security.Authorization;
 using VirtoCommerce.StoreModule.Core.Model;
 using VirtoCommerce.StoreModule.Core.Services;
 using VirtoCommerce.Xapi.Core.Extensions;
@@ -60,6 +62,7 @@ public sealed class GraphQlTestContext : IDisposable
     private readonly HashSet<string> _lockedUserIds = [];
     private readonly Dictionary<string, Member> _members = [];
     private readonly HashSet<(string UserId, string OrganizationId)> _lockedMemberships = [];
+    private readonly Dictionary<(string UserId, string OrganizationId), string> _membershipStatuses = [];
 
     public GraphQlTestContext()
     {
@@ -87,6 +90,7 @@ public sealed class GraphQlTestContext : IDisposable
         services.AddSingleton<IUserManagerCore>(new UserManagerCore(CreateUserManager, requestScopedCacheAccessor: null));
         services.AddSingleton(CreateMemberService());
         services.AddSingleton(CreateOrganizationMembershipSearchService());
+        services.AddSingleton<IAuthorizationHandler, DefaultPermissionAuthorizationHandler>();
         services.AddSingleton<IAuthorizationHandler, OrganizationOrderStatisticsAuthorizationHandler>();
 
         services.AddGraphQL(builder =>
@@ -167,6 +171,11 @@ public sealed class GraphQlTestContext : IDisposable
     public void LockMembership(string userId, string organizationId)
     {
         _lockedMemberships.Add((userId, organizationId));
+    }
+
+    public void SetMembershipStatus(string userId, string organizationId, string status)
+    {
+        _membershipStatuses[(userId, organizationId)] = status;
     }
 
     public Task<string> ExecuteAsync(string query, string userId, string organizationId = null, params string[] permissions)
@@ -259,7 +268,22 @@ public sealed class GraphQlTestContext : IDisposable
 
         memberService
             .Setup(x => x.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync((string memberId, string _, string _) => memberId != null && _members.TryGetValue(memberId, out var member) ? member : null);
+            .ReturnsAsync((string memberId, string responseGroup, string _) =>
+            {
+                if (memberId == null || !_members.TryGetValue(memberId, out var member))
+                {
+                    return null;
+                }
+
+                var result = (Member)member.Clone();
+                // MemberService loads the accounts only for this response group.
+                if (!EnumUtility.SafeParseFlags(responseGroup, MemberResponseGroup.Full).HasFlag(MemberResponseGroup.WithSecurityAccounts) && result is IHasSecurityAccounts hasAccounts)
+                {
+                    hasAccounts.SecurityAccounts = [];
+                }
+
+                return result;
+            });
 
         return memberService.Object;
     }
@@ -268,7 +292,7 @@ public sealed class GraphQlTestContext : IDisposable
     {
         var membershipSearchService = new Mock<IOrganizationMembershipSearchService>();
 
-        // Any membership asked for exists, unlocked unless a test locks it.
+        // Any membership asked for exists, active unless a test locks it or sets its status.
         membershipSearchService
             .Setup(x => x.SearchAsync(It.IsAny<OrganizationMembershipSearchCriteria>(), It.IsAny<bool>()))
             .ReturnsAsync((OrganizationMembershipSearchCriteria criteria, bool _) => new OrganizationMembershipSearchResult
@@ -280,6 +304,7 @@ public sealed class GraphQlTestContext : IDisposable
                         UserId = criteria.UserId,
                         OrganizationId = criteria.OrganizationId,
                         IsLocked = _lockedMemberships.Contains((criteria.UserId, criteria.OrganizationId)),
+                        Status = _membershipStatuses.GetValueOrDefault((criteria.UserId, criteria.OrganizationId)),
                     },
                 ],
             });

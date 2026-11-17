@@ -30,9 +30,9 @@ public class OrderStatisticsQueryHandler : IQueryHandler<OrderStatisticsQuery, O
     public virtual async Task<OrderStatisticsContext> Handle(OrderStatisticsQuery request, CancellationToken cancellationToken)
     {
         var result = AbstractTypeFactory<OrderStatisticsContext>.TryCreateInstance();
+        result.OrganizationIds = string.IsNullOrEmpty(request.OrganizationId) ? null : [request.OrganizationId];
         if (request.OrganizationScope)
         {
-            result.OrganizationIds = [request.OrganizationId];
             result.CustomerIds = string.IsNullOrEmpty(request.MemberId)
                 ? null
                 : await GetMemberAccountIdsAsync(request.MemberId, request.OrganizationId);
@@ -40,7 +40,6 @@ public class OrderStatisticsQueryHandler : IQueryHandler<OrderStatisticsQuery, O
         else
         {
             result.CustomerId = request.CustomerId;
-            result.OrganizationIds = string.IsNullOrEmpty(request.OrganizationId) ? null : [request.OrganizationId];
         }
 
         // An empty store id means all stores, like null: one scope, so one DataLoader key and one cache entry.

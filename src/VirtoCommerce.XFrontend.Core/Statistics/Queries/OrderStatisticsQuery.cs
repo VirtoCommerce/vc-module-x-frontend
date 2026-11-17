@@ -29,7 +29,7 @@ public class OrderStatisticsQuery : Query<OrderStatisticsContext>
         yield return Argument<StringGraphType>(nameof(CurrencyCode), "Currency all amounts are converted to (the store's default currency, then the platform's primary currency, when omitted).");
         yield return Argument<StringGraphType>(nameof(CultureName), "Culture for the formatted money amounts (\"en-US\").");
         yield return Argument<BooleanGraphType>(nameof(OrganizationScope), "Count every order of the current organization, whoever placed it, instead of the caller's own. Needs the xapi:my_organization:order:view permission.");
-        yield return Argument<StringGraphType>(nameof(MemberId), "With organizationScope: only the orders of this member (a contact id) of the current organization.");
+        yield return Argument<StringGraphType>(nameof(MemberId), "With organizationScope: only the orders of this member (a contact or employee id) of the current organization.");
     }
 
     public override void Map(IResolveFieldContext context)

@@ -10,6 +10,7 @@ using VirtoCommerce.Platform.Core;
 using VirtoCommerce.Platform.Core.Security;
 using VirtoCommerce.Platform.Security.Authorization;
 using VirtoCommerce.XFrontend.Core.Statistics.Queries;
+using CustomerModuleConstants = VirtoCommerce.CustomerModule.Core.ModuleConstants;
 using ProfileModuleConstants = VirtoCommerce.ProfileExperienceApiModule.Data.ModuleConstants;
 
 namespace VirtoCommerce.XFrontend.Data.Statistics.Authorization;
@@ -74,7 +75,13 @@ public class OrganizationOrderStatisticsAuthorizationHandler : PermissionAuthori
         }
 
         var membership = await _organizationMembershipSearchService.GetMembershipAsync(userId, organizationId);
-        return membership?.IsCurrentlyLocked != true;
+        if (membership?.IsCurrentlyLocked == true)
+        {
+            return false;
+        }
+
+        var effectiveStatus = OrganizationMembership.ResolveEffectiveStatus(membership?.Status, member.Status);
+        return !CustomerModuleConstants.MembershipStatuses.IsBlocking(effectiveStatus);
     }
 
     private static string GetCurrentUserId(AuthorizationHandlerContext context)

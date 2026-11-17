@@ -233,6 +233,20 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
         _context.Statistics.Calls.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData("Invited")]
+    [InlineData("Rejected")]
+    [InlineData("Deleted")]
+    public async Task OrganizationScope_WithABlockingMembershipStatus_IsDenied(string status)
+    {
+        _context.SetMembershipStatus(User, "org-1", status);
+
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), User, organizationId: "org-1", OrganizationOrderView);
+
+        GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Code.Should().Be(Constants.ForbiddenCode);
+        _context.Statistics.Calls.Should().BeEmpty();
+    }
+
     [Fact]
     public async Task OrganizationScope_IsOpenToAPlatformAdministrator()
     {

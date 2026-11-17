@@ -77,14 +77,14 @@ Returns details about the current user
 
 ## Order Statistics
 
-The `orderStatistics` query returns figures over the signed-in user's own orders: orders whose customer is the current user, in the organization of the user's token when there is one. Anonymous users and locked or expired accounts are refused. The query has no user, customer or organization argument: the organization is always the token's.
+The `orderStatistics` query returns figures over the signed-in user's own orders: orders whose customer is the current user, in the organization of the user's token when there is one. Anonymous users and locked or expired accounts are refused. The query has no user, customer or organization argument: the organization is always the token's, and `memberId` only narrows it.
 
 Arguments:
 
 - `storeId`: counts the orders of one store only (all stores when omitted).
 - `currencyCode`: currency every amount is converted to. Defaults to the store's default currency, then to the platform's primary currency. An unknown currency code returns an error.
 - `cultureName`: culture of the formatted money amounts.
-- `organizationScope`: `true` counts every order of the token's organization, whoever placed it (other members, people who have left, orders placed on a member's behalf), instead of the user's own. It needs the `xapi:my_organization:order:view` permission (the Organization maintainer role has it by default; the platform Administrator role holds every permission) a current organization, and the user's current, unlocked membership in it (checked on every request, not only from the token); otherwise the query is refused.
+- `organizationScope`: `true` counts every order of the token's organization, whoever placed it (other members, people who have left, orders placed on a member's behalf), instead of the user's own. It needs the `xapi:my_organization:order:view` permission (the Organization maintainer role has it by default; the platform Administrator role holds every permission), a current organization, and the user's current membership in it, neither locked nor Invited, Rejected or Deleted, checked on every request rather than taken from the token; otherwise the query is refused.
 - `memberId`: with `organizationScope`, counts only the orders of one member of the token's organization, by member id (a contact or an employee): the orders of all of the member's accounts. A member outside the organization is refused exactly like an unknown one. Without `organizationScope` the argument is an error.
 
 Fields:
