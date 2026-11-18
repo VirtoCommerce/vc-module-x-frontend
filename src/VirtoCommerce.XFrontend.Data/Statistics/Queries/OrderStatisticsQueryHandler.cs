@@ -31,7 +31,7 @@ public class OrderStatisticsQueryHandler : IQueryHandler<OrderStatisticsQuery, O
     {
         var result = AbstractTypeFactory<OrderStatisticsContext>.TryCreateInstance();
         result.OrganizationIds = string.IsNullOrEmpty(request.OrganizationId) ? null : [request.OrganizationId];
-        if (request.OrganizationScope)
+        if (request.IsOrganizationScope)
         {
             result.CustomerIds = string.IsNullOrEmpty(request.MemberId)
                 ? null

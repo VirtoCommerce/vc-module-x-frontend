@@ -182,13 +182,13 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
 
         var field = _context.Schema.Query.GetField("orderStatistics");
 
-        field.Arguments.Select(x => x.Name).Should().BeEquivalentTo("storeId", "currencyCode", "cultureName", "organizationScope", "memberId");
+        field.Arguments.Select(x => x.Name).Should().BeEquivalentTo("storeId", "currencyCode", "cultureName", "isOrganizationScope", "memberId");
     }
 
     [Fact]
     public async Task OrganizationScope_WithThePermission_CountsTheCurrentOrganization()
     {
-        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), User, organizationId: "org-1", OrganizationOrderView);
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", isOrganizationScope: true"), User, organizationId: "org-1", OrganizationOrderView);
 
         GraphQlTestContext.Data(json, "orderStatistics");
         var criteria = _context.Statistics.Calls.Should().ContainSingle().Subject;
@@ -201,7 +201,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     [Fact]
     public async Task OrganizationScope_WithoutThePermission_IsDenied()
     {
-        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), User, organizationId: "org-1");
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", isOrganizationScope: true"), User, organizationId: "org-1");
 
         GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Code.Should().Be(Constants.ForbiddenCode);
         _context.Statistics.Calls.Should().BeEmpty();
@@ -214,7 +214,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
         _context.AddUser("former-user", memberId: "former-contact");
         _context.AddContact("former-contact", ["org-2"], "former-user");
 
-        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), "former-user", organizationId: "org-1", OrganizationOrderView);
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", isOrganizationScope: true"), "former-user", organizationId: "org-1", OrganizationOrderView);
 
         GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Code.Should().Be(Constants.ForbiddenCode);
         _context.Statistics.Calls.Should().BeEmpty();
@@ -225,7 +225,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     {
         _context.LockMembership(User, "org-1");
 
-        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), User, organizationId: "org-1", OrganizationOrderView);
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", isOrganizationScope: true"), User, organizationId: "org-1", OrganizationOrderView);
 
         GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Code.Should().Be(Constants.ForbiddenCode);
         _context.Statistics.Calls.Should().BeEmpty();
@@ -239,7 +239,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     {
         _context.SetMembershipStatus(User, "org-1", status);
 
-        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), User, organizationId: "org-1", OrganizationOrderView);
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", isOrganizationScope: true"), User, organizationId: "org-1", OrganizationOrderView);
 
         GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Code.Should().Be(Constants.ForbiddenCode);
         _context.Statistics.Calls.Should().BeEmpty();
@@ -251,7 +251,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
         // Without a membership status, the member's own status decides.
         _context.SetMemberStatus(UserContact, "Rejected");
 
-        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), User, organizationId: "org-1", OrganizationOrderView);
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", isOrganizationScope: true"), User, organizationId: "org-1", OrganizationOrderView);
 
         GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Code.Should().Be(Constants.ForbiddenCode);
         _context.Statistics.Calls.Should().BeEmpty();
@@ -263,7 +263,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
         // Customer treats a missing membership record as an approved membership.
         _context.RemoveMembership(User, "org-1");
 
-        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), User, organizationId: "org-1", OrganizationOrderView);
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", isOrganizationScope: true"), User, organizationId: "org-1", OrganizationOrderView);
 
         GraphQlTestContext.Data(json, "orderStatistics");
         _context.Statistics.Calls.Should().ContainSingle().Which.OrganizationIds.Should().Equal("org-1");
@@ -275,7 +275,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
         _context.AddUser("employee-user", memberId: "employee-1");
         _context.AddEmployee("employee-1", ["org-1"], "employee-user");
 
-        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), "employee-user", organizationId: "org-1", OrganizationOrderView);
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", isOrganizationScope: true"), "employee-user", organizationId: "org-1", OrganizationOrderView);
 
         GraphQlTestContext.Data(json, "orderStatistics");
         _context.Statistics.Calls.Should().ContainSingle().Which.OrganizationIds.Should().Equal("org-1");
@@ -286,7 +286,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     {
         _context.AddUser("admin-user", isAdministrator: true);
 
-        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), "admin-user", organizationId: "org-9");
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", isOrganizationScope: true"), "admin-user", organizationId: "org-9");
 
         GraphQlTestContext.Data(json, "orderStatistics");
         _context.Statistics.Calls.Should().ContainSingle().Which.OrganizationIds.Should().Equal("org-9");
@@ -298,7 +298,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
         // An administrator passes the authorization handler, so only the missing organization can refuse.
         _context.AddUser("admin-user", isAdministrator: true);
 
-        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: true"), "admin-user", organizationId: null);
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", isOrganizationScope: true"), "admin-user", organizationId: null);
 
         GraphQlTestContext.Errors(json).Should().ContainSingle().Which.Code.Should().Be(Constants.ForbiddenCode);
         _context.Statistics.Calls.Should().BeEmpty();
@@ -307,7 +307,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
     [Fact]
     public async Task OrganizationScopeOff_KeepsTheOwnScope()
     {
-        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", organizationScope: false"), User, organizationId: "org-1", OrganizationOrderView);
+        var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", isOrganizationScope: false"), User, organizationId: "org-1", OrganizationOrderView);
 
         GraphQlTestContext.Data(json, "orderStatistics");
         var criteria = _context.Statistics.Calls.Should().ContainSingle().Subject;
@@ -322,7 +322,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
         _context.AddContact("contact-1", ["org-2", "org-1"], "account-b", "account-a");
 
         var json = await _context.ExecuteAsync(
-            Query("storeId: \"B2B-store\", organizationScope: true, memberId: \"contact-1\""),
+            Query("storeId: \"B2B-store\", isOrganizationScope: true, memberId: \"contact-1\""),
             User,
             organizationId: "org-1",
             OrganizationOrderView);
@@ -340,7 +340,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
         _context.AddEmployee("employee-1", ["org-1"], "account-e");
 
         var json = await _context.ExecuteAsync(
-            Query("storeId: \"B2B-store\", organizationScope: true, memberId: \"employee-1\""),
+            Query("storeId: \"B2B-store\", isOrganizationScope: true, memberId: \"employee-1\""),
             User,
             organizationId: "org-1",
             OrganizationOrderView);
@@ -357,7 +357,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
         _context.AddContact("contact-of-org-2", ["org-2"], "account-x");
 
         var json = await _context.ExecuteAsync(
-            Query($"storeId: \"B2B-store\", organizationScope: true, memberId: \"{memberId}\""),
+            Query($"storeId: \"B2B-store\", isOrganizationScope: true, memberId: \"{memberId}\""),
             User,
             organizationId: "org-1",
             OrganizationOrderView);
@@ -376,7 +376,7 @@ public sealed class OrderStatisticsGraphQlTests : IDisposable
         var json = await _context.ExecuteAsync(Query("storeId: \"B2B-store\", memberId: \"contact-1\""), User, organizationId: "org-1", OrganizationOrderView);
 
         var error = GraphQlTestContext.Errors(json).Should().ContainSingle().Subject;
-        error.Message.Should().Contain("organizationScope");
+        error.Message.Should().Contain("isOrganizationScope");
         error.Code.Should().Be(Constants.ValidationErrorCode);
         _context.Statistics.Calls.Should().BeEmpty();
     }

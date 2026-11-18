@@ -39,11 +39,11 @@ public class OrderStatisticsQueryBuilder : QueryBuilder<OrderStatisticsQuery, Or
 
     protected virtual async Task CheckScopeAsync(IResolveFieldContext<object> context, OrderStatisticsQuery request)
     {
-        if (!request.OrganizationScope)
+        if (!request.IsOrganizationScope)
         {
             if (!string.IsNullOrEmpty(request.MemberId))
             {
-                throw new ExecutionError("memberId is only accepted together with organizationScope: true.") { Code = Constants.ValidationErrorCode };
+                throw new ExecutionError("memberId is only accepted together with isOrganizationScope: true.") { Code = Constants.ValidationErrorCode };
             }
 
             return;
