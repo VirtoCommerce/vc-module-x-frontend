@@ -6,6 +6,8 @@ public class OrderStatisticsContext
 {
     public string CustomerId { get; set; }
 
+    public IList<string> CustomerIds { get; set; }
+
     public IList<string> OrganizationIds { get; set; }
 
     public string StoreId { get; set; }

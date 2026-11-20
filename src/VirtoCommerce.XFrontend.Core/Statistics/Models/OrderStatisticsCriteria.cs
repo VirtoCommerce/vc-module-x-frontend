@@ -8,6 +8,9 @@ public class OrderStatisticsCriteria : ValueObject
 {
     public string CustomerId { get; set; }
 
+    // Empty matches no order, never the whole organization: a member without accounts has placed none.
+    public IList<string> CustomerIds { get; set; }
+
     public IList<string> OrganizationIds { get; set; }
 
     public string StoreId { get; set; }

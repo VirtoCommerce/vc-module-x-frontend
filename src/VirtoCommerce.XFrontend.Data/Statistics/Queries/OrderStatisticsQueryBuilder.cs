@@ -5,10 +5,13 @@ using Microsoft.Extensions.DependencyInjection;
 using VirtoCommerce.CoreModule.Core.Currency;
 using VirtoCommerce.Xapi.Core.BaseQueries;
 using VirtoCommerce.Xapi.Core.Extensions;
+using VirtoCommerce.Xapi.Core.Helpers;
+using VirtoCommerce.Xapi.Core.Security.Authorization;
 using VirtoCommerce.Xapi.Core.Services;
 using VirtoCommerce.XFrontend.Core.Statistics.Models;
 using VirtoCommerce.XFrontend.Core.Statistics.Queries;
 using VirtoCommerce.XFrontend.Core.Statistics.Schemas;
+using VirtoCommerce.XFrontend.Data.Statistics.Authorization;
 
 namespace VirtoCommerce.XFrontend.Data.Statistics.Queries;
 
@@ -27,8 +30,30 @@ public class OrderStatisticsQueryBuilder : QueryBuilder<OrderStatisticsQuery, Or
 
         await context.RequestServices.GetRequiredService<IUserManagerCore>().CheckCurrentUserState(context, allowAnonymous: false);
 
+        await CheckScopeAsync(context, request);
+
         // The money fields format in the requested culture, from this one list.
         var currencies = await context.RequestServices.GetRequiredService<ICurrencyService>().GetAllCurrenciesAsync();
         context.SetCurrencies(currencies, request.CultureName);
+    }
+
+    protected virtual async Task CheckScopeAsync(IResolveFieldContext<object> context, OrderStatisticsQuery request)
+    {
+        if (!request.IsOrganizationScope)
+        {
+            if (!string.IsNullOrEmpty(request.MemberId))
+            {
+                throw new ExecutionError("memberId is only accepted together with isOrganizationScope: true.") { Code = Constants.ValidationErrorCode };
+            }
+
+            return;
+        }
+
+        if (string.IsNullOrEmpty(request.OrganizationId))
+        {
+            throw AuthorizationError.Forbidden("Organization statistics need a current organization.");
+        }
+
+        await Authorize(context, request, new OrganizationOrderStatisticsAuthorizationRequirement());
     }
 }

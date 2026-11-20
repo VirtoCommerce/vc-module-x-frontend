@@ -9,14 +9,18 @@ using FluentValidation;
 using GraphQL;
 using GraphQL.Introspection;
 using GraphQL.Types;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using VirtoCommerce.CoreModule.Core.Currency;
+using VirtoCommerce.CustomerModule.Core.Model;
 using VirtoCommerce.CustomerModule.Core.Services;
 using VirtoCommerce.Platform.Core;
+using VirtoCommerce.Platform.Core.Common;
 using VirtoCommerce.Platform.Core.Security;
 using VirtoCommerce.Platform.Core.Security.SignInLog;
+using VirtoCommerce.Platform.Security.Authorization;
 using VirtoCommerce.StoreModule.Core.Model;
 using VirtoCommerce.StoreModule.Core.Services;
 using VirtoCommerce.Xapi.Core.Extensions;
@@ -33,6 +37,7 @@ using VirtoCommerce.XFrontend.Data.Commands;
 using VirtoCommerce.XFrontend.Data.Layouts.Services;
 using VirtoCommerce.XFrontend.Data.Layouts.Validation;
 using VirtoCommerce.XFrontend.Data.Queries;
+using VirtoCommerce.XFrontend.Data.Statistics.Authorization;
 using VirtoCommerce.XFrontend.Data.Statistics.Services;
 using Xunit;
 using CustomerModuleConstants = VirtoCommerce.CustomerModule.Core.ModuleConstants;
@@ -55,6 +60,10 @@ public sealed class GraphQlTestContext : IDisposable
     private readonly ServiceProvider _provider;
     private readonly Dictionary<string, ApplicationUser> _users = [];
     private readonly HashSet<string> _lockedUserIds = [];
+    private readonly Dictionary<string, Member> _members = [];
+    private readonly HashSet<(string UserId, string OrganizationId)> _lockedMemberships = [];
+    private readonly Dictionary<(string UserId, string OrganizationId), string> _membershipStatuses = [];
+    private readonly HashSet<(string UserId, string OrganizationId)> _removedMemberships = [];
 
     public GraphQlTestContext()
     {
@@ -80,6 +89,10 @@ public sealed class GraphQlTestContext : IDisposable
         services.AddTransient<ILayoutService, LayoutService>();
         services.AddTransient<AbstractValidator<SaveLayoutCommand>, SaveLayoutCommandValidator>();
         services.AddSingleton<IUserManagerCore>(new UserManagerCore(CreateUserManager, requestScopedCacheAccessor: null));
+        services.AddSingleton(CreateMemberService());
+        services.AddSingleton(CreateOrganizationMembershipSearchService());
+        services.AddSingleton<IAuthorizationHandler, DefaultPermissionAuthorizationHandler>();
+        services.AddSingleton<IAuthorizationHandler, OrganizationOrderStatisticsAuthorizationHandler>();
 
         services.AddGraphQL(builder =>
         {
@@ -117,9 +130,9 @@ public sealed class GraphQlTestContext : IDisposable
 
     /// <summary>
     /// Creates an account for the account-state check: usable by default, or locked, or with an expired password.
-    /// An administrator's token also carries the platform Administrator role.
+    /// An administrator's token also carries the platform Administrator role; a member's account carries the member id.
     /// </summary>
-    public void AddUser(string userId, bool locked = false, bool passwordExpired = false, bool isAdministrator = false)
+    public void AddUser(string userId, bool locked = false, bool passwordExpired = false, bool isAdministrator = false, string memberId = null)
     {
         _users[userId] = new ApplicationUser
         {
@@ -127,6 +140,7 @@ public sealed class GraphQlTestContext : IDisposable
             UserName = userId,
             PasswordExpired = passwordExpired,
             IsAdministrator = isAdministrator,
+            MemberId = memberId,
         };
 
         if (locked)
@@ -135,8 +149,47 @@ public sealed class GraphQlTestContext : IDisposable
         }
     }
 
-    /// <summary>Executes as a signed-in user; <paramref name="organizationId"/> becomes the token's organization claim.</summary>
-    public Task<string> ExecuteAsync(string query, string userId, string organizationId = null)
+    public void AddContact(string contactId, IList<string> organizationIds, params string[] accountIds)
+    {
+        _members[contactId] = new Contact
+        {
+            Id = contactId,
+            Organizations = [.. organizationIds],
+            SecurityAccounts = accountIds.Select(x => new ApplicationUser { Id = x, UserName = x }).ToList(),
+        };
+    }
+
+    public void AddEmployee(string employeeId, IList<string> organizationIds, params string[] accountIds)
+    {
+        _members[employeeId] = new Employee
+        {
+            Id = employeeId,
+            Organizations = [.. organizationIds],
+            SecurityAccounts = accountIds.Select(x => new ApplicationUser { Id = x, UserName = x }).ToList(),
+        };
+    }
+
+    public void LockMembership(string userId, string organizationId)
+    {
+        _lockedMemberships.Add((userId, organizationId));
+    }
+
+    public void SetMembershipStatus(string userId, string organizationId, string status)
+    {
+        _membershipStatuses[(userId, organizationId)] = status;
+    }
+
+    public void RemoveMembership(string userId, string organizationId)
+    {
+        _removedMemberships.Add((userId, organizationId));
+    }
+
+    public void SetMemberStatus(string memberId, string status)
+    {
+        _members[memberId].Status = status;
+    }
+
+    public Task<string> ExecuteAsync(string query, string userId, string organizationId = null, params string[] permissions)
     {
         var identity = new ClaimsIdentity(authenticationType: "Test");
         identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userId));
@@ -150,9 +203,19 @@ public sealed class GraphQlTestContext : IDisposable
             identity.AddClaim(new Claim(CustomerModuleConstants.Security.Claims.OrganizationId, organizationId));
         }
 
+        foreach (var permission in permissions)
+        {
+            identity.AddClaim(new Claim(PlatformConstants.Security.Claims.PermissionClaimType, permission));
+        }
+
         if (_users.TryGetValue(userId, out var user) && user.IsAdministrator)
         {
             identity.AddClaim(new Claim(identity.RoleClaimType, PlatformConstants.Security.SystemRoles.Administrator));
+        }
+
+        if (!string.IsNullOrEmpty(user?.MemberId))
+        {
+            identity.AddClaim(new Claim(PlatformConstants.Security.Claims.MemberIdClaimType, user.MemberId));
         }
 
         return ExecuteAsync(query, new ClaimsPrincipal(identity));
@@ -208,6 +271,58 @@ public sealed class GraphQlTestContext : IDisposable
         });
 
         return scope.ServiceProvider.GetRequiredService<IGraphQLTextSerializer>().Serialize(result);
+    }
+
+    private IMemberService CreateMemberService()
+    {
+        var memberService = new Mock<IMemberService>();
+
+        memberService
+            .Setup(x => x.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((string memberId, string responseGroup, string _) =>
+            {
+                if (memberId == null || !_members.TryGetValue(memberId, out var member))
+                {
+                    return null;
+                }
+
+                var result = (Member)member.Clone();
+                // MemberService loads the accounts only for this response group.
+                if (!EnumUtility.SafeParseFlags(responseGroup, MemberResponseGroup.Full).HasFlag(MemberResponseGroup.WithSecurityAccounts) && result is IHasSecurityAccounts hasAccounts)
+                {
+                    hasAccounts.SecurityAccounts = [];
+                }
+
+                return result;
+            });
+
+        return memberService.Object;
+    }
+
+    private IOrganizationMembershipSearchService CreateOrganizationMembershipSearchService()
+    {
+        var membershipSearchService = new Mock<IOrganizationMembershipSearchService>();
+
+        // Any membership asked for exists unless a test removes it, active unless a test locks it or sets its status.
+        membershipSearchService
+            .Setup(x => x.SearchAsync(It.IsAny<OrganizationMembershipSearchCriteria>(), It.IsAny<bool>()))
+            .ReturnsAsync((OrganizationMembershipSearchCriteria criteria, bool _) => new OrganizationMembershipSearchResult
+            {
+                Results = _removedMemberships.Contains((criteria.UserId, criteria.OrganizationId))
+                    ? []
+                    :
+                    [
+                        new OrganizationMembership
+                        {
+                            UserId = criteria.UserId,
+                            OrganizationId = criteria.OrganizationId,
+                            IsLocked = _lockedMemberships.Contains((criteria.UserId, criteria.OrganizationId)),
+                            Status = _membershipStatuses.GetValueOrDefault((criteria.UserId, criteria.OrganizationId)),
+                        },
+                    ],
+            });
+
+        return membershipSearchService.Object;
     }
 
     private UserManager<ApplicationUser> CreateUserManager()

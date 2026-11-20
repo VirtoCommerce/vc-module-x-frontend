@@ -59,6 +59,7 @@ public class OrderStatisticsType : ExtendableGraphType<OrderStatisticsContext>
     {
         var criteria = AbstractTypeFactory<OrderStatisticsCriteria>.TryCreateInstance();
         criteria.CustomerId = source.CustomerId;
+        criteria.CustomerIds = source.CustomerIds;
         criteria.OrganizationIds = source.OrganizationIds;
         criteria.StoreId = source.StoreId;
         criteria.CurrencyCode = source.CurrencyCode;
